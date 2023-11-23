@@ -441,6 +441,12 @@
 
             <dependency>
                 <groupId>io.gravitee.plugin</groupId>
+                <artifactId>gravitee-plugin-integrationprovider</artifactId>
+                <version>${gravitee-plugin.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.gravitee.plugin</groupId>
                 <artifactId>gravitee-plugin-notifier</artifactId>
                 <version>${gravitee-plugin.version}</version>
             </dependency>
