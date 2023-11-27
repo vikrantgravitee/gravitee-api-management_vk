@@ -2506,7 +2506,7 @@ components:
                               $ref: "#/components/schemas/FlowV4"
                       services:
                           $ref: "#/components/schemas/ApiServices"
-                  required: [listeners, endpointGroups, type]
+                  required: [ listeners, endpointGroups, type ]
 
         ApiDeployment:
             type: object
@@ -2566,6 +2566,7 @@ components:
             enum:
                 - MESSAGE
                 - PROXY
+                - FEDERATED
         Visibility:
             type: string
             description: The visibility of the resource regarding the portal.
@@ -2994,6 +2995,12 @@ components:
                 name:
                     type: string
                     description: Name of the entity
+                version:
+                    type: string
+                    description: Version of the entity
+                description:
+                    type: string
+                    description: Description of the entity
                 type:
                     type: string
                     description: Type of the entity
