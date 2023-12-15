@@ -22,8 +22,8 @@ import static io.gravitee.rest.api.model.api.ApiLifecycleState.UNPUBLISHED;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.gravitee.apim.core.api.domain_service.validation.AnalyticsValidationService;
+import io.gravitee.apim.core.api.domain_service.validation.ApiTypeValidationService;
 import io.gravitee.definition.model.DefinitionVersion;
-import io.gravitee.definition.model.v4.ApiType;
 import io.gravitee.definition.model.v4.flow.Flow;
 import io.gravitee.definition.model.v4.plan.PlanStatus;
 import io.gravitee.definition.model.v4.service.Service;
@@ -43,7 +43,6 @@ import io.gravitee.rest.api.service.exceptions.LifecycleStateChangeNotAllowedExc
 import io.gravitee.rest.api.service.impl.TransactionalService;
 import io.gravitee.rest.api.service.v4.ApiServicePluginService;
 import io.gravitee.rest.api.service.v4.PlanSearchService;
-import io.gravitee.rest.api.service.v4.exception.ApiTypeException;
 import io.gravitee.rest.api.service.v4.validation.ApiValidationService;
 import io.gravitee.rest.api.service.v4.validation.EndpointGroupsValidationService;
 import io.gravitee.rest.api.service.v4.validation.FlowValidationService;
@@ -66,6 +65,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ApiValidationServiceImpl extends TransactionalService implements ApiValidationService {
 
+    private final ApiTypeValidationService apiTypeValidationService;
     private final TagsValidationService tagsValidationService;
     private final GroupValidationService groupValidationService;
     private final ListenerValidationService listenerValidationService;
@@ -79,6 +79,7 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
     private final ApiServicePluginService apiServicePluginService;
 
     public ApiValidationServiceImpl(
+        ApiTypeValidationService apiTypeValidationService,
         final TagsValidationService tagsValidationService,
         final GroupValidationService groupValidationService,
         final ListenerValidationService listenerValidationService,
@@ -91,6 +92,7 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
         final PathParametersValidationService pathParametersValidationService,
         ApiServicePluginService apiServicePluginService
     ) {
+        this.apiTypeValidationService = apiTypeValidationService;
         this.tagsValidationService = tagsValidationService;
         this.groupValidationService = groupValidationService;
         this.listenerValidationService = listenerValidationService;
@@ -113,7 +115,7 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
         // Validate version
         this.validateDefinitionVersion(null, newApiEntity.getDefinitionVersion());
         // Validate API Type
-        this.validateApiType(null, newApiEntity.getType());
+        apiTypeValidationService.validate(null, newApiEntity.getType());
         // Validate and clean tags
         newApiEntity.setTags(tagsValidationService.validateAndSanitize(executionContext, null, newApiEntity.getTags()));
         // Validate and clean groups
@@ -157,7 +159,7 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
         // Validate version
         this.validateDefinitionVersion(existingApiEntity.getDefinitionVersion(), updateApiEntity.getDefinitionVersion());
         // Validate API Type
-        this.validateApiType(existingApiEntity.getType(), updateApiEntity.getType());
+        apiTypeValidationService.validate(existingApiEntity.getType(), updateApiEntity.getType());
         // Validate and clean lifecycle state
         updateApiEntity.setLifecycleState(this.validateAndSanitizeLifecycleState(existingApiEntity, updateApiEntity));
         // Validate and clean tags
@@ -218,7 +220,7 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
         // Validate version
         this.validateDefinitionVersion(null, apiEntity.getDefinitionVersion());
         // Validate API Type
-        this.validateApiType(null, apiEntity.getType());
+        apiTypeValidationService.validate(null, apiEntity.getType());
         // Validate and clean lifecycle state. In creation, lifecycle state can't be set.
         apiEntity.setLifecycleState(null);
         // Validate and clean tags
@@ -283,16 +285,6 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
         if (oldDefinitionVersion != null && oldDefinitionVersion.asInteger() > newDefinitionVersion.asInteger()) {
             // not allowed downgrading definition version
             throw new DefinitionVersionException();
-        }
-    }
-
-    private void validateApiType(final ApiType oldApiType, final ApiType newApiType) {
-        if (newApiType == null) {
-            throw new InvalidDataException("ApiType cannot be null.");
-        }
-        if (oldApiType != null && oldApiType != newApiType) {
-            // not allowed changing API Type
-            throw new ApiTypeException();
         }
     }
 
