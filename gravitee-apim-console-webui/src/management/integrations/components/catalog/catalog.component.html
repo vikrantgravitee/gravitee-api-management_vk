@@ -21,7 +21,7 @@
     <div class="item">
       <div class="item-head">
         <div class="logo-box">
-          <img class="logo" [src]="item.iconPath"  [alt]="item.title + ' logo'" />
+          <img class="logo" [src]="item.iconPath" [alt]="item.title + ' logo'" />
         </div>
         <h3 class="title">{{item.title}}</h3>
         <div class="badges">
@@ -35,25 +35,37 @@
         <p>{{item.description}}</p>
       </div>
 
-      <div class="status">
-        <span class="badge gio-badge-neutral">{{item.status}}</span>
+      <div class="integrationsCount">
+        <span [ngClass]="item.integrationsCount ? 'badge gio-badge-primary' :  'badge gio-badge-neutral'">{{getIntegrationsCountMessage(item.integrationsCount)}}</span>
       </div>
 
-      
+      <div class="buttons">
         <ng-container *ngIf="item.isAdd else comingSoon">
           <button
-            mat-stroked-button 
+            mat-stroked-button
             class="add-button"
-            (click)="handleAdd()"
+            (click)="handleAdd(item.provider)"
           >
             Add
           </button>
         </ng-container>
+
+        <ng-container *ngIf="!!item.integrationsCount">
+          <button
+            mat-stroked-button
+            class="view-button"
+            (click)="handleView(item.provider)"
+          >
+            View
+          </button>
+        </ng-container>
+
         <ng-template #comingSoon>
           <span class="comming-soon badge gio-badge-primary">Coming soon</span>
         </ng-template>
-      
-      
+
+      </div>
+
     </div>
   </ng-container>
 

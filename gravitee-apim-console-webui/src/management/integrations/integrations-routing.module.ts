@@ -15,12 +15,12 @@
  */
 
 import { RouterModule, Routes } from "@angular/router";
+import { NgModule } from "@angular/core";
 
 import { AddIntegrationComponent } from "./pages/add-integration/add-integration.component";
 import { CatalogComponent } from "./components/catalog/catalog.component";
 import { IntegrationsComponent } from "./integrations.component";
 import { MyIntegrationsComponent } from "./components/my-integrations/my-integrations.component";
-import { NgModule } from "@angular/core";
 
 const routes: Routes = [
   {
@@ -44,7 +44,7 @@ const routes: Routes = [
   },
 
   {
-    path: "add-integration",
+    path: "add-integration/:provider",
     component: AddIntegrationComponent
   },
 

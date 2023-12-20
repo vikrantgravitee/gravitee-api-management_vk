@@ -14,24 +14,36 @@
  * limitations under the License.
  */
 
-import { ActivatedRoute, Router } from '@angular/router';
-import { Component } from '@angular/core';
+import { ActivatedRoute, Router } from "@angular/router";
+import { Component } from "@angular/core";
 
 import { catalogData } from "../../data/catalog.data";
 
 @Component({
-  selector: 'app-catalog',
-  templateUrl: './catalog.component.html',
-  styleUrls: ['./catalog.component.scss']
+  selector: "app-catalog",
+  templateUrl: "./catalog.component.html",
+  styleUrls: ["./catalog.component.scss"]
 })
 export class CatalogComponent {
   protected readonly catalogData = catalogData;
 
-  constructor(private router: Router, private route: ActivatedRoute) {
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
   }
 
 
-  handleAdd() {
-    this.router.navigate(["../add-integration"], {relativeTo: this.route});
+  public handleAdd(provider: string): void {
+    this.router.navigate([`../add-integration/${provider}`], { relativeTo: this.route });
+  }
+
+  public handleView(provider: string) {
+    return;
+  }
+
+  public getIntegrationsCountMessage(integrationsCount) {
+    return integrationsCount ? `${integrationsCount} integration(s) configured` : "No integration configured";
   }
 }

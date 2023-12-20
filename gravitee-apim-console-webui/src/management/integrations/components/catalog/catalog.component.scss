@@ -21,6 +21,8 @@
   gap: 8px;
 
   .logo-box {
+    width: 50px;
+    height: 50px;
     display: flex;
     padding: 8px;
     flex-direction: column;
@@ -47,11 +49,20 @@
   text-transform: none;
 }
 
-.add-button, .comming-soon {
+.buttons {
   margin-top: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.add-button, .view-button {
+  border-radius: 8px;
+  border: 2px solid var(--Neutrals-Dove-DoveDark20, #D3D5DC);
 }
 
 .comming-soon {
   height: 36px;
   padding: 0 8px;
 }
+

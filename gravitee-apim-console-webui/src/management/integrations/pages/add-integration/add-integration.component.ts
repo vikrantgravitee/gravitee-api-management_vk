@@ -14,20 +14,85 @@
  * limitations under the License.
  */
 
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
+import { FormBuilder, FormGroup } from "@angular/forms";
+import { Subscription } from "rxjs";
+import { take } from "rxjs/operators";
+
+import { AddIntegrationService } from "../../services/add-integration.service";
+import { AddIntegrationPostData, Providers } from "../../model/integrations.model";
 
 @Component({
-  selector: 'app-add-integration',
+  selector: "app-add-integration",
   templateUrl: "./add-integration.component.html",
   styleUrls: ["./add-integration.component.scss"]
 })
-export class AddIntegrationComponent {
+export class AddIntegrationComponent implements OnInit, OnDestroy {
+  protected readonly Providers = Providers;
+  private subscription: Subscription;
+  public configurationFields;
+  public provider: Providers;
+  public serviceName = "";
+  public addIntegrationForm: FormGroup;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
-
-  handleExit() {
-    this.router.navigate(["../"], {relativeTo: this.route});
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private formBuilder: FormBuilder,
+    public addIntegrationService: AddIntegrationService
+  ) {
   }
 
+  ngOnDestroy() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  ngOnInit() {
+    this.provider = this.route.snapshot.paramMap.get("provider") as Providers;
+    this.serviceName = this.providerToServiceName(this.provider);
+    this.addIntegrationForm = this.formBuilder.group({
+      name: [""],
+      description: [""],
+      configuration: this.buildConfigurationForm()
+    });
+  }
+
+  private buildConfigurationForm() {
+    this.configurationFields = this.addIntegrationService.getConfiguration(this.provider);
+    return this.formBuilder.group({ ...this.configurationFields.controls });
+  }
+
+  public providerToServiceName(provider: Providers): string {
+    const titles = {
+      aws: "Amazon API Gateway",
+      solace: "Solace"
+    };
+    return titles[provider];
+  }
+
+  onSubmit(form: FormGroup) {
+    const data: AddIntegrationPostData = {
+      type: this.provider,
+      name: form.value.name,
+      description: form.value.description,
+      configuration: {
+        ...form.value.configuration
+      }
+    };
+
+    this.subscription = this.addIntegrationService
+      .addIntegration(data)
+      .pipe(take(1))
+      .subscribe(_ => {
+        this.handleExit();
+      });
+  }
+
+  public handleExit() {
+    this.router
+      .navigate(["../../"], { relativeTo: this.route });
+  }
 }
