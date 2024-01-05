@@ -21,13 +21,17 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatInputModule } from "@angular/material/input";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatTabsModule } from "@angular/material/tabs";
+import { MatIconModule } from "@angular/material/icon";
 import { NgModule } from "@angular/core";
+import { GioBreadcrumbModule, GioSubmenuModule } from "@gravitee/ui-particles-angular";
 
 import { IntegrationsRoutingModule } from "./integrations-routing.module";
 import { AddIntegrationComponent } from "./pages/add-integration/add-integration.component";
 import { CatalogComponent } from "./components/catalog/catalog.component";
 import { IntegrationsComponent } from "./integrations.component";
 import { MyIntegrationsComponent } from "./components/my-integrations/my-integrations.component";
+import { BreadcrumbsComponent } from "./components/breadcrumbs/breadcrumbs.component";
+
 
 
 @NgModule({
@@ -39,13 +43,17 @@ import { MyIntegrationsComponent } from "./components/my-integrations/my-integra
     MatTabsModule,
     MatButtonModule,
     MatInputModule,
-    MatRadioModule
+    MatRadioModule,
+    GioBreadcrumbModule,
+    GioSubmenuModule,
+    MatIconModule
   ],
   declarations: [
     IntegrationsComponent,
     CatalogComponent,
     MyIntegrationsComponent,
-    AddIntegrationComponent
+    AddIntegrationComponent,
+    BreadcrumbsComponent
   ]
 })
 export class IntegrationsModule {

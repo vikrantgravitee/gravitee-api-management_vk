@@ -16,6 +16,7 @@
 
 -->
 
+<app-breadcrumbs [serviceName]="serviceName"></app-breadcrumbs>
 
 <div class="add-integration">
   <div class="header">
@@ -29,7 +30,6 @@
       Portal for direct client connection.
     </p>
   </div>
-
 
   <form class="form" [formGroup]="addIntegrationForm" (ngSubmit)="onSubmit(addIntegrationForm)">
 
@@ -71,7 +71,7 @@
               <ng-container *ngFor="let input of configurationFields.inputs">
                 <mat-form-field class="control">
                   <mat-label>{{input.label}}</mat-label>
-                  <input [formControlName]="input.formControlName" matInput type="text"/>
+                  <input [formControlName]="input.formControlName" matInput type="text" />
                   <mat-error *ngIf="false">{{input.label}} is required.</mat-error>
                 </mat-form-field>
               </ng-container>
