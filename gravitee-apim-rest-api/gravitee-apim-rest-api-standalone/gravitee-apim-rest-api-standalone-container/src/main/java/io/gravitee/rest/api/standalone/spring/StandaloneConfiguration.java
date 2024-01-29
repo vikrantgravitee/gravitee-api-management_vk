@@ -15,9 +15,9 @@
  */
 package io.gravitee.rest.api.standalone.spring;
 
+import io.gravitee.integration.controller.spring.IntegrationControllerConfiguration;
 import io.gravitee.node.api.Node;
 import io.gravitee.node.api.NodeMetadataResolver;
-import io.gravitee.node.container.NodeFactory;
 import io.gravitee.platform.repository.api.RepositoryScopeProvider;
 import io.gravitee.rest.api.management.rest.spring.RestManagementConfiguration;
 import io.gravitee.rest.api.portal.rest.spring.RestPortalConfiguration;
@@ -41,6 +41,7 @@ import org.springframework.context.annotation.Import;
         RestManagementConfiguration.class,
         io.gravitee.rest.api.management.v2.rest.spring.RestManagementConfiguration.class,
         RestPortalConfiguration.class,
+        IntegrationControllerConfiguration.class,
     }
 )
 public class StandaloneConfiguration {

@@ -16,8 +16,7 @@
 package io.gravitee.apim.infra.adapter;
 
 import io.gravitee.apim.core.integration.model.IntegrationEntity;
-import io.gravitee.integration.api.Entity;
-import io.gravitee.integration.api.model.Integration;
+import io.gravitee.integration.api.model.Entity;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -29,9 +28,9 @@ import org.mapstruct.factory.Mappers;
 public interface IntegrationAdapter {
     IntegrationAdapter INSTANCE = Mappers.getMapper(IntegrationAdapter.class);
 
-    Integration toEntity(io.gravitee.repository.management.model.Integration integration);
+    IntegrationEntity toEntity(io.gravitee.repository.management.model.Integration integration);
 
-    io.gravitee.repository.management.model.Integration toRepository(Integration integration);
+    io.gravitee.repository.management.model.Integration toRepository(IntegrationEntity integration);
 
     Entity toEntityApi(IntegrationEntity integrationEntity);
 
