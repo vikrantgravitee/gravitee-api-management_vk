@@ -45,6 +45,7 @@ import io.gravitee.integration.api.model.Integration;
 import io.gravitee.integration.connector.command.IntegrationConnectorCommandContext;
 import io.gravitee.integration.connector.command.IntegrationConnectorCommandHandlersFactory;
 import io.gravitee.plugin.integrationprovider.IntegrationProviderPluginManager;
+
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import java.util.List;
@@ -133,9 +134,9 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
                     integration.getEnvironmentId(),
                     integrationProvider
                 );
-                Map<String, CommandHandler<? extends Command<?>, ? extends Reply<?>>> connectorCommandHandlers =
+                List<CommandHandler<? extends Command<?>, ? extends Reply<?>>> connectorCommandHandlers =
                     connectorCommandHandlersFactory.buildCommandHandlers(integrationConnectorCommandContext);
-                Map<String, ReplyHandler<? extends Command<?>, ? extends Command<?>, ? extends Reply<?>>> connectorReplyHandlers =
+                List<ReplyHandler<? extends Command<?>, ? extends Command<?>, ? extends Reply<?>>> connectorReplyHandlers =
                     connectorCommandHandlersFactory.buildReplyHandlers(integrationConnectorCommandContext);
                 EmbeddedChannel embeddedChannel = EmbeddedChannel
                     .builder()
@@ -205,7 +206,6 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
         return exchangeController
             .sendCommand(listCommand, integrationId)
             .cast(ListReply.class)
-            .defaultIfEmpty(new ListReply(listCommand.getId(), "Command received no reply"))
             .onErrorReturn(throwable -> new ListReply(listCommand.getId(), throwable.getMessage()));
     }
 
@@ -213,7 +213,6 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
         return exchangeController
             .sendCommand(fetchCommand, integrationId)
             .cast(FetchReply.class)
-            .defaultIfEmpty(new FetchReply(fetchCommand.getId(), "Command received no reply"))
             .onErrorReturn(throwable -> new FetchReply(fetchCommand.getId(), throwable.getMessage()));
     }
 }

@@ -17,8 +17,6 @@ package io.gravitee.rest.api.standalone.node;
 
 import io.gravitee.apim.core.integration.domain_service.IntegrationDomainService;
 import io.gravitee.common.component.LifecycleComponent;
-import io.gravitee.exchange.api.controller.ExchangeController;
-import io.gravitee.exchange.controller.core.cluster.ControllerClusterManager;
 import io.gravitee.node.api.NodeMetadataResolver;
 import io.gravitee.node.container.AbstractNode;
 import io.gravitee.node.services.initializer.spring.InitializerConfiguration;
@@ -27,10 +25,10 @@ import io.gravitee.plugin.alert.AlertEventProducerManager;
 import io.gravitee.plugin.alert.AlertTriggerProviderManager;
 import io.gravitee.rest.api.service.ScheduledCommandService;
 import io.gravitee.rest.api.standalone.jetty.JettyEmbeddedContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 
 /**
  * @author David BRASSELY (david.brassely at graviteesource.com)
