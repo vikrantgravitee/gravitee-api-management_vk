@@ -313,13 +313,13 @@
 		<dependency>
 			<groupId>io.gravitee.exchange</groupId>
 			<artifactId>gravitee-exchange-connector-embedded</artifactId>
-			<version>1.0.0-alpha.2</version>
+			<version>1.0.0-alpha.4</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.gravitee.exchange</groupId>
 			<artifactId>gravitee-exchange-controller-websocket</artifactId>
-			<version>1.0.0-alpha.2</version>
+			<version>1.0.0-alpha.4</version>
 			<scope>compile</scope>
 		</dependency>
 

@@ -52,6 +52,8 @@ import io.gravitee.apim.core.documentation.use_case.ApiPublishDocumentationPageU
 import io.gravitee.apim.core.documentation.use_case.ApiUnpublishDocumentationPageUseCase;
 import io.gravitee.apim.core.documentation.use_case.ApiUpdateDocumentationPageUseCase;
 import io.gravitee.apim.core.environment.crud_service.EnvironmentCrudService;
+import io.gravitee.apim.core.event.crud_service.EventCrudService;
+import io.gravitee.apim.core.gateway.query_service.InstanceQueryService;
 import io.gravitee.apim.core.integration.crud_service.IntegrationCrudService;
 import io.gravitee.apim.core.integration.domain_service.IntegrationDomainService;
 import io.gravitee.apim.core.integration.query_service.IntegrationQueryService;
@@ -62,8 +64,6 @@ import io.gravitee.apim.core.integration.usecase.IntegrationGetUsecase;
 import io.gravitee.apim.core.integration.usecase.IntegrationImportUsecase;
 import io.gravitee.apim.core.integration.usecase.IntegrationRemoteCreateUsecase;
 import io.gravitee.apim.core.integration.usecase.IntegrationsGetUsecase;
-import io.gravitee.apim.core.event.crud_service.EventCrudService;
-import io.gravitee.apim.core.gateway.query_service.InstanceQueryService;
 import io.gravitee.apim.core.license.domain_service.GraviteeLicenseDomainService;
 import io.gravitee.apim.core.log.crud_service.ConnectionLogsCrudService;
 import io.gravitee.apim.core.log.crud_service.MessageLogCrudService;

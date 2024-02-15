@@ -25,10 +25,11 @@ import io.gravitee.apim.core.license.domain_service.GraviteeLicenseDomainService
 import io.gravitee.apim.infra.adapter.IntegrationAdapter;
 import io.gravitee.common.service.AbstractService;
 import io.gravitee.exchange.api.command.Command;
+import io.gravitee.exchange.api.command.CommandAdapter;
 import io.gravitee.exchange.api.command.CommandHandler;
 import io.gravitee.exchange.api.command.CommandStatus;
 import io.gravitee.exchange.api.command.Reply;
-import io.gravitee.exchange.api.command.ReplyHandler;
+import io.gravitee.exchange.api.command.ReplyAdapter;
 import io.gravitee.exchange.api.connector.ExchangeConnectorManager;
 import io.gravitee.exchange.api.controller.ExchangeController;
 import io.gravitee.exchange.connector.embedded.EmbeddedExchangeConnector;
@@ -45,12 +46,9 @@ import io.gravitee.integration.api.model.Integration;
 import io.gravitee.integration.connector.command.IntegrationConnectorCommandContext;
 import io.gravitee.integration.connector.command.IntegrationConnectorCommandHandlersFactory;
 import io.gravitee.plugin.integrationprovider.IntegrationProviderPluginManager;
-
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import java.util.List;
-import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -136,13 +134,16 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
                 );
                 List<CommandHandler<? extends Command<?>, ? extends Reply<?>>> connectorCommandHandlers =
                     connectorCommandHandlersFactory.buildCommandHandlers(integrationConnectorCommandContext);
-                List<ReplyHandler<? extends Command<?>, ? extends Command<?>, ? extends Reply<?>>> connectorReplyHandlers =
-                    connectorCommandHandlersFactory.buildReplyHandlers(integrationConnectorCommandContext);
+                List<CommandAdapter<? extends Command<?>, ? extends Command<?>, ? extends Reply<?>>> commandAdapters =
+                    connectorCommandHandlersFactory.buildCommandAdapters(integrationConnectorCommandContext);
+                List<ReplyAdapter<? extends Reply<?>, ? extends Reply<?>>> replyAdapters =
+                    connectorCommandHandlersFactory.buildReplyAdapters(integrationConnectorCommandContext);
                 EmbeddedChannel embeddedChannel = EmbeddedChannel
                     .builder()
                     .targetId(integration.getId())
                     .commandHandlers(connectorCommandHandlers)
-                    .replyHandlers(connectorReplyHandlers)
+                    .commandAdapters(commandAdapters)
+                    .replyAdapters(replyAdapters)
                     .build();
                 exchangeController
                     .register(embeddedChannel)
