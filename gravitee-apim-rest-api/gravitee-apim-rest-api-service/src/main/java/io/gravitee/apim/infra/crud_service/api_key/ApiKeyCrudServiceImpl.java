@@ -34,6 +34,15 @@ public class ApiKeyCrudServiceImpl implements ApiKeyCrudService {
     }
 
     @Override
+    public void create(ApiKeyEntity apiKey) {
+        try {
+            apiKeyRepository.create(ApiKeyAdapter.INSTANCE.fromEntity(apiKey));
+        } catch (TechnicalException e) {
+            throw new TechnicalManagementException("An error occurs while trying to create the api key: " + apiKey.getId(), e);
+        }
+    }
+
+    @Override
     public ApiKeyEntity update(ApiKeyEntity apiKey) {
         try {
             var result = apiKeyRepository.update(ApiKeyAdapter.INSTANCE.fromEntity(apiKey));

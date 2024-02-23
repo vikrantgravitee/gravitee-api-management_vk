@@ -21,13 +21,24 @@ import static io.gravitee.common.http.HttpStatusCode.OK_200;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import fixtures.SubscriptionFixtures;
+import inmemory.ApplicationCrudServiceInMemory;
+import inmemory.InMemoryAlternative;
+import inmemory.PlanCrudServiceInMemory;
+import inmemory.SubscriptionCrudServiceInMemory;
+import io.gravitee.apim.core.api.domain_service.ApiTemplateDomainService;
+import io.gravitee.apim.core.audit.model.AuditInfo;
 import io.gravitee.rest.api.management.v2.rest.model.Error;
 import io.gravitee.rest.api.management.v2.rest.model.Subscription;
+import io.gravitee.rest.api.model.ApiKeyMode;
+import io.gravitee.rest.api.model.BaseApplicationEntity;
+import io.gravitee.rest.api.model.EnvironmentEntity;
 import io.gravitee.rest.api.model.ProcessSubscriptionEntity;
 import io.gravitee.rest.api.model.SubscriptionEntity;
 import io.gravitee.rest.api.model.SubscriptionStatus;
@@ -37,10 +48,52 @@ import io.gravitee.rest.api.service.common.GraviteeContext;
 import io.gravitee.rest.api.service.exceptions.SubscriptionNotFoundException;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Response;
+import java.util.List;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ApiSubscriptionsResource_AcceptTest extends ApiSubscriptionsResourceTest {
+
+    @Autowired
+    private ApplicationCrudServiceInMemory applicationCrudServiceInMemory;
+
+    @Autowired
+    private PlanCrudServiceInMemory planCrudServiceInMemory;
+
+    @Autowired
+    private SubscriptionCrudServiceInMemory subscriptionCrudServiceInMemory;
+
+    @Autowired
+    private ApiTemplateDomainService apiTemplateDomainService;
+
+    @BeforeEach
+    public void setUp() {
+        super.setUp();
+
+        EnvironmentEntity environmentEntity = EnvironmentEntity.builder().id(ENVIRONMENT).organizationId(ORGANIZATION).build();
+        doReturn(environmentEntity).when(environmentService).findById(ENVIRONMENT);
+        doReturn(environmentEntity).when(environmentService).findByOrgAndIdOrHrid(ORGANIZATION, ENVIRONMENT);
+
+        GraviteeContext.setCurrentEnvironment(ENVIRONMENT);
+        GraviteeContext.setCurrentOrganization(ORGANIZATION);
+
+        applicationCrudServiceInMemory.initWith(
+            List.of(BaseApplicationEntity.builder().id(APPLICATION).apiKeyMode(ApiKeyMode.EXCLUSIVE).build())
+        );
+    }
+
+    @AfterEach
+    public void tearDown() {
+        Stream
+            .of(applicationCrudServiceInMemory, planCrudServiceInMemory, subscriptionCrudServiceInMemory)
+            .forEach(InMemoryAlternative::reset);
+
+        GraviteeContext.cleanContext();
+    }
 
     @Override
     protected String contextPath() {
@@ -49,8 +102,6 @@ public class ApiSubscriptionsResource_AcceptTest extends ApiSubscriptionsResourc
 
     @Test
     public void should_return_404_if_not_found() {
-        when(subscriptionService.findById(SUBSCRIPTION)).thenThrow(new SubscriptionNotFoundException(SUBSCRIPTION));
-
         final Response response = rootTarget().request().post(Entity.json(SubscriptionFixtures.anAcceptSubscription()));
         assertEquals(NOT_FOUND_404, response.getStatus());
 
@@ -61,14 +112,9 @@ public class ApiSubscriptionsResource_AcceptTest extends ApiSubscriptionsResourc
 
     @Test
     public void should_return_404_if_subscription_associated_to_another_api() {
-        final SubscriptionEntity subscriptionEntity = SubscriptionFixtures
-            .aSubscriptionEntity()
-            .toBuilder()
-            .id(SUBSCRIPTION)
-            .api("ANOTHER-API")
-            .build();
-
-        when(subscriptionService.findById(SUBSCRIPTION)).thenReturn(subscriptionEntity);
+        subscriptionCrudServiceInMemory.initWith(
+            List.of(fixtures.core.model.SubscriptionFixtures.aSubscription().toBuilder().id(SUBSCRIPTION).apiId("ANOTHER-API").build())
+        );
 
         final Response response = rootTarget().request().post(Entity.json(SubscriptionFixtures.anAcceptSubscription()));
         assertEquals(NOT_FOUND_404, response.getStatus());
@@ -100,35 +146,30 @@ public class ApiSubscriptionsResource_AcceptTest extends ApiSubscriptionsResourc
 
     @Test
     public void should_accept_subscription() {
-        final SubscriptionEntity subscriptionEntity = SubscriptionFixtures
-            .aSubscriptionEntity()
-            .toBuilder()
-            .id(SUBSCRIPTION)
-            .api(API)
-            .plan(PLAN)
-            .status(SubscriptionStatus.PENDING)
-            .build();
         final var acceptSubscription = SubscriptionFixtures.anAcceptSubscription();
+        when(apiTemplateDomainService.findByIdForTemplates(anyString(), any(AuditInfo.class)))
+            .thenReturn(fixtures.core.model.ApiFixtures.aProxyApiV4());
 
-        when(subscriptionService.findById(SUBSCRIPTION)).thenReturn(subscriptionEntity);
-        when(subscriptionService.process(eq(GraviteeContext.getExecutionContext()), any(ProcessSubscriptionEntity.class), eq(USER_NAME)))
-            .thenReturn(subscriptionEntity);
+        planCrudServiceInMemory.initWith(List.of(fixtures.core.model.PlanFixtures.aPlanV4()));
+
+        subscriptionCrudServiceInMemory.initWith(
+            List.of(
+                fixtures.core.model.SubscriptionFixtures
+                    .aSubscription()
+                    .toBuilder()
+                    .id(SUBSCRIPTION)
+                    .apiId(API)
+                    .planId(PLAN)
+                    .applicationId(APPLICATION)
+                    .status(io.gravitee.apim.core.subscription.model.SubscriptionEntity.Status.PENDING)
+                    .build()
+            )
+        );
 
         final Response response = rootTarget().request().post(Entity.json(acceptSubscription));
         assertEquals(OK_200, response.getStatus());
 
         final Subscription subscription = response.readEntity(Subscription.class);
         assertEquals(SUBSCRIPTION, subscription.getId());
-
-        verify(subscriptionService)
-            .process(
-                eq(GraviteeContext.getExecutionContext()),
-                Mockito.argThat(processSubscriptionEntity -> {
-                    assertEquals(SUBSCRIPTION, processSubscriptionEntity.getId());
-                    assertTrue(processSubscriptionEntity.isAccepted());
-                    return true;
-                }),
-                eq(USER_NAME)
-            );
     }
 }

@@ -23,22 +23,32 @@ import io.gravitee.apim.core.audit.model.event.PageAuditEvent;
 import io.gravitee.apim.core.documentation.crud_service.PageCrudService;
 import io.gravitee.apim.core.documentation.crud_service.PageRevisionCrudService;
 import io.gravitee.apim.core.documentation.model.Page;
+import io.gravitee.apim.core.documentation.query_service.PageQueryService;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.Map;
 
 public class CreateApiDocumentationDomainService {
 
     private final PageCrudService pageCrudService;
+
+    private final PageQueryService pageQueryService;
     private final PageRevisionCrudService pageRevisionCrudService;
+
+    private final ApiDocumentationDomainService apiDocumentationDomainService;
     private final AuditDomainService auditDomainService;
 
     public CreateApiDocumentationDomainService(
         PageCrudService pageCrudService,
+        PageQueryService pageQueryService,
         PageRevisionCrudService pageRevisionCrudService,
+        ApiDocumentationDomainService apiDocumentationDomainService,
         AuditDomainService auditDomainService
     ) {
         this.pageCrudService = pageCrudService;
+        this.pageQueryService = pageQueryService;
         this.pageRevisionCrudService = pageRevisionCrudService;
+        this.apiDocumentationDomainService = apiDocumentationDomainService;
         this.auditDomainService = auditDomainService;
     }
 
@@ -65,5 +75,19 @@ public class CreateApiDocumentationDomainService {
                 .build()
         );
         return createdPage;
+    }
+
+    public void validateNameIsUnique(Page page) {
+        this.apiDocumentationDomainService.validateNameIsUnique(page.getReferenceId(), page.getParentId(), page.getName(), page.getType());
+    }
+
+    public void calculateOrder(Page page) {
+        var lastPage = pageQueryService
+            .searchByApiIdAndParentId(page.getReferenceId(), page.getParentId())
+            .stream()
+            .max(Comparator.comparingInt(Page::getOrder));
+        var nextOrder = lastPage.map(value -> value.getOrder() + 1).orElse(0);
+
+        page.setOrder(nextOrder);
     }
 }

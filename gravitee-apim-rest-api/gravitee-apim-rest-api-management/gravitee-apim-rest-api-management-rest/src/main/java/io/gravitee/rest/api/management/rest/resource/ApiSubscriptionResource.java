@@ -348,6 +348,7 @@ public class ApiSubscriptionResource extends AbstractResource {
                 case ACCEPTED -> SubscriptionStatus.ACCEPTED;
                 case CLOSED -> SubscriptionStatus.CLOSED;
                 case PAUSED -> SubscriptionStatus.PAUSED;
+                case INTEGRATION_PROCESSING -> SubscriptionStatus.INTEGRATION_PROCESSING;
             }
         );
         subscription.setConsumerStatus(

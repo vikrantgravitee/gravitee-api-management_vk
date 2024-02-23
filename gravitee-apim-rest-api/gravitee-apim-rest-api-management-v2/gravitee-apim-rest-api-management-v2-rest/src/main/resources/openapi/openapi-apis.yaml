@@ -1076,48 +1076,48 @@ paths:
                                 $ref: "#/components/schemas/Integration"
                 default:
                     $ref: "#/components/responses/Error"
-    /environments/{envId}/integrations/{integrationId}/entities:
+    /environments/{envId}/integrations/{integrationId}/assets:
         parameters:
             - $ref: "#/components/parameters/envIdParam"
             - $ref: "#/components/parameters/integrationIdParam"
         get:
             tags:
                 - Integration
-            summary: Get a list of entities for a specific Integration
+            summary: Get a list of assets for a specific Integration
             description: |-
-                Get a list of entities for a specific Integration.
+                Get a list of assets for a specific Integration.
 
                 User must have at least one management (create, update, or delete) permission on the Integration to access it.
-            operationId: getIntegrationEntities
+            operationId: getIntegrationAssets
             responses:
                 "200":
-                    $ref: "#/components/responses/IntegrationEntitiesResponse"
+                    $ref: "#/components/responses/IntegrationAssetsResponse"
                 default:
                     $ref: "#/components/responses/Error"
-    /environments/{envId}/integrations/{integrationId}/entities/_import:
+    /environments/{envId}/integrations/{integrationId}/assets/_import:
         parameters:
             - $ref: "#/components/parameters/envIdParam"
             - $ref: "#/components/parameters/integrationIdParam"
         post:
             tags:
                 - Integration
-            summary: Import a list of entities for a specific Integration
+            summary: Import a list of assets for a specific Integration
             description: |-
-                Import a list of entities for a specific Integration.
+                Import a list of assets for a specific Integration.
 
                 User must have at least one management (create, update, or delete) permission on the Integration to access it.
-            operationId: importIntegrationEntities
+            operationId: importIntegrationAssets
             requestBody:
                 content:
                     application/json:
                         schema:
                             type: array
                             items:
-                                $ref: "#/components/schemas/IntegrationEntity"
+                                $ref: "#/components/schemas/IntegrationAsset"
                 required: true
             responses:
                 "200":
-                    $ref: "#/components/responses/IntegrationEntitiesResponse"
+                    $ref: "#/components/responses/IntegrationAssetsResponse"
                 default:
                     $ref: "#/components/responses/Error"
 
@@ -3006,28 +3006,28 @@ components:
                 configuration:
                     type: object
                     description: Configuration of this integration
-                entities:
+                assets:
                     type: array
                     items:
-                        $ref: "#/components/schemas/IntegrationEntity"
-        IntegrationEntity:
+                        $ref: "#/components/schemas/IntegrationAsset"
+        IntegrationAsset:
             type: object
             properties:
                 id:
                     type: string
-                    description: Id of the entity
+                    description: Id of the asset
                 name:
                     type: string
-                    description: Name of the entity
+                    description: Name of the asset
                 version:
                     type: string
-                    description: Version of the entity
+                    description: Version of the asset
                 description:
                     type: string
-                    description: Description of the entity
+                    description: Description of the asset
                 type:
                     type: string
-                    description: Type of the entity
+                    description: Type of the asset
                     enum:
                         - OPENAPI
                         - ASYNCAPI
@@ -3697,6 +3697,7 @@ components:
                 - CLOSED
                 - PAUSED
                 - RESUMED
+                - INTEGRATION_PROCESSING
 
         SubscriptionConsumerStatus:
             type: string
@@ -5925,18 +5926,18 @@ components:
                                 $ref: "#/components/schemas/Pagination"
                             links:
                                 $ref: "#/components/schemas/Links"
-        IntegrationEntitiesResponse:
-            description: Page of integration entities
+        IntegrationAssetsResponse:
+            description: Page of integration assets
             content:
                 application/json:
                     schema:
-                        title: "IntegrationsResponse"
+                        title: "IntegrationAssetsResponse"
                         properties:
                             data:
-                                description: List of entities for an integration.
+                                description: List of assets for an integration.
                                 type: array
                                 items:
-                                    $ref: "#/components/schemas/IntegrationEntity"
+                                    $ref: "#/components/schemas/IntegrationAsset"
                             pagination:
                                 $ref: "#/components/schemas/Pagination"
                             links:

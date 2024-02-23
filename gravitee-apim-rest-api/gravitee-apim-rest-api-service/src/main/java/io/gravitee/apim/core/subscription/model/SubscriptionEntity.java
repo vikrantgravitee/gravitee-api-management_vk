@@ -98,6 +98,22 @@ public class SubscriptionEntity {
         return ConsumerStatus.STARTED.equals(consumerStatus) || ConsumerStatus.FAILURE.equals(consumerStatus);
     }
 
+    public SubscriptionEntity acceptBy(String userId, ZonedDateTime startingAt, ZonedDateTime endingAt, String reason) {
+        if (Status.PENDING.equals(this.status) || Status.INTEGRATION_PROCESSING.equals(this.status)) {
+            final ZonedDateTime now = ZonedDateTime.now();
+            return this.toBuilder()
+                .processedBy(userId)
+                .updatedAt(now)
+                .processedAt(now)
+                .startingAt((startingAt != null) ? startingAt : now)
+                .endingAt(endingAt)
+                .reasonMessage(reason)
+                .status(Status.ACCEPTED)
+                .build();
+        }
+        throw new IllegalStateException("Cannot accept subscription");
+    }
+
     public SubscriptionEntity close() {
         return switch (this.status) {
             case ACCEPTED, PAUSED -> {
@@ -105,7 +121,7 @@ public class SubscriptionEntity {
                 yield this.toBuilder().updatedAt(now).closedAt(now).status(Status.CLOSED).build();
             }
             case REJECTED, CLOSED -> this;
-            case PENDING -> throw new IllegalStateException("Pending subscription is not closable");
+            case PENDING, INTEGRATION_PROCESSING -> throw new IllegalStateException("Pending subscription is not closable");
         };
     }
 
@@ -119,6 +135,14 @@ public class SubscriptionEntity {
 
     public SubscriptionEntity rejectBy(String userId) {
         return this.rejectBy(userId, "Subscription has been closed.");
+    }
+
+    public SubscriptionEntity processByIntegration(String userId) {
+        if (Status.PENDING.equals(this.status)) {
+            final ZonedDateTime now = ZonedDateTime.now();
+            return this.toBuilder().status(Status.INTEGRATION_PROCESSING).processedBy(userId).updatedAt(now).build();
+        }
+        throw new IllegalStateException("Subscription cannot be processed by an integration");
     }
 
     public boolean isAccepted() {
@@ -156,6 +180,9 @@ public class SubscriptionEntity {
 
         /** Subscription has been paused */
         PAUSED,
+
+        /** Waiting from integration status */
+        INTEGRATION_PROCESSING,
     }
 
     public enum ConsumerStatus {

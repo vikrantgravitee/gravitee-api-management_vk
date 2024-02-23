@@ -16,11 +16,11 @@
 
 package io.gravitee.rest.api.management.v2.rest.resource.integration;
 
-import io.gravitee.apim.core.integration.use_case.IntegrationGetEntitiesUseCase;
-import io.gravitee.apim.core.integration.use_case.IntegrationImportUseCase;
+import io.gravitee.apim.core.integration.use_case.IntegrationGetAssetsUseCase;
+import io.gravitee.apim.core.integration.use_case.IntegrationImportAssetsUseCase;
 import io.gravitee.common.http.MediaType;
 import io.gravitee.rest.api.management.v2.rest.mapper.IntegrationMapper;
-import io.gravitee.rest.api.management.v2.rest.model.IntegrationEntity;
+import io.gravitee.rest.api.management.v2.rest.model.IntegrationAsset;
 import io.gravitee.rest.api.management.v2.rest.resource.AbstractResource;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -41,24 +41,24 @@ import lombok.extern.slf4j.Slf4j;
  * @author GraviteeSource Team
  */
 @Slf4j
-@Path("/environments/{envId}/integrations/{integrationId}/entities")
-public class IntegrationEntitiesResource extends AbstractResource {
+@Path("/environments/{envId}/integrations/{integrationId}/assets")
+public class IntegrationAssetsResource extends AbstractResource {
 
     @Inject
-    private IntegrationGetEntitiesUseCase integrationGetEntitiesUsecase;
+    private IntegrationGetAssetsUseCase integrationGetAssetsUsecase;
 
     @Inject
-    private IntegrationImportUseCase integrationImportUsecase;
+    private IntegrationImportAssetsUseCase integrationImportAssetsUsecase;
 
     @PathParam("integrationId")
     String integrationId;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public void getIntegrationEntities(@Suspended final AsyncResponse response) {
-        integrationGetEntitiesUsecase
-            .execute(IntegrationGetEntitiesUseCase.Input.builder().integrationId(integrationId).build())
-            .entities()
+    public void getIntegrationAssets(@Suspended final AsyncResponse response) {
+        integrationGetAssetsUsecase
+            .execute(IntegrationGetAssetsUseCase.Input.builder().integrationId(integrationId).build())
+            .assets()
             .toList()
             .doOnSuccess(entity -> log.info("received entities {}", entity))
             .subscribe(response::resume, response::resume);
@@ -68,14 +68,14 @@ public class IntegrationEntitiesResource extends AbstractResource {
     @Path("_import")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public void importIntegrationEntities(@Valid @NotNull List<IntegrationEntity> entities, @Suspended final AsyncResponse response) {
-        var modelEntities = IntegrationMapper.INSTANCE.mapEntities(entities);
-        integrationImportUsecase
+    public void importIntegrationAssets(@Valid @NotNull List<IntegrationAsset> assets, @Suspended final AsyncResponse response) {
+        var modelAssets = IntegrationMapper.INSTANCE.mapAssets(assets);
+        integrationImportAssetsUsecase
             .execute(
-                IntegrationImportUseCase.Input
+                IntegrationImportAssetsUseCase.Input
                     .builder()
                     .integrationId(integrationId)
-                    .entities(modelEntities)
+                    .assets(modelAssets)
                     .auditInfo(getAuditInfo())
                     .build()
             )

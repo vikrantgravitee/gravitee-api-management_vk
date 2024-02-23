@@ -320,6 +320,11 @@ public class Subscription implements Serializable {
          * Subscription has been paused
          */
         PAUSED,
+
+        /**
+         * Waiting from integration status
+         */
+        INTEGRATION_PROCESSING,
     }
 
     public enum ConsumerStatus {

@@ -29,4 +29,5 @@ public enum SubscriptionStatus {
     CLOSED,
     PAUSED,
     RESUMED,
+    INTEGRATION_PROCESSING,
 }

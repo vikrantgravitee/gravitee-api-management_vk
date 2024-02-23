@@ -65,7 +65,7 @@ public class CloseSubscriptionDomainService {
         return switch (subscription.getStatus()) {
             case ACCEPTED, PAUSED -> closeAcceptedOrPausedSubscription(subscription, auditInfo);
             case PENDING -> rejectSubscriptionDomainService.rejectSubscription(subscription, auditInfo);
-            case CLOSED, REJECTED -> subscription;
+            case CLOSED, REJECTED, INTEGRATION_PROCESSING -> subscription;
         };
     }
 

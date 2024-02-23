@@ -53,9 +53,8 @@ public class ApiCreateDocumentationPageUseCase {
         }
 
         this.validateParentId(pageToCreate);
-        this.validateNameIsUnique(pageToCreate);
-
-        this.calculateOrder(pageToCreate);
+        createApiDocumentationDomainService.validateNameIsUnique(pageToCreate);
+        createApiDocumentationDomainService.calculateOrder(pageToCreate);
 
         var createdPage = createApiDocumentationDomainService.createPage(pageToCreate, input.auditInfo());
 
@@ -90,19 +89,5 @@ public class ApiCreateDocumentationPageUseCase {
         }
 
         page.setParentId(null);
-    }
-
-    private void validateNameIsUnique(Page page) {
-        this.apiDocumentationDomainService.validateNameIsUnique(page.getReferenceId(), page.getParentId(), page.getName(), page.getType());
-    }
-
-    private void calculateOrder(Page page) {
-        var lastPage = pageQueryService
-            .searchByApiIdAndParentId(page.getReferenceId(), page.getParentId())
-            .stream()
-            .max(Comparator.comparingInt(Page::getOrder));
-        var nextOrder = lastPage.map(value -> value.getOrder() + 1).orElse(0);
-
-        page.setOrder(nextOrder);
     }
 }

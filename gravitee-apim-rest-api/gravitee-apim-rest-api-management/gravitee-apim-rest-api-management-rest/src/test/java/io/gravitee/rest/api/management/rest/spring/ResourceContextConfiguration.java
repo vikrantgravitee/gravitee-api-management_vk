@@ -21,12 +21,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gravitee.apim.core.access_point.query_service.AccessPointQueryService;
 import io.gravitee.apim.core.api.domain_service.ApiMetadataDomainService;
 import io.gravitee.apim.core.api.domain_service.ApiPolicyValidatorDomainService;
+import io.gravitee.apim.core.api.domain_service.ApiTemplateDomainService;
 import io.gravitee.apim.core.api.domain_service.CreateApiDomainService;
+import io.gravitee.apim.core.api.domain_service.CreateFederatedApiDomainService;
 import io.gravitee.apim.core.api.domain_service.DeployApiDomainService;
 import io.gravitee.apim.core.api.domain_service.UpdateApiDomainService;
 import io.gravitee.apim.core.api.domain_service.UpdateFederatedApiDomainService;
 import io.gravitee.apim.core.api.domain_service.VerifyApiPathDomainService;
 import io.gravitee.apim.core.api.query_service.ApiQueryService;
+import io.gravitee.apim.core.api_key.domain_service.GenerateApiKeyDomainService;
 import io.gravitee.apim.core.installation.domain_service.InstallationTypeDomainService;
 import io.gravitee.apim.core.installation.query_service.InstallationAccessQueryService;
 import io.gravitee.apim.core.integration.domain_service.IntegrationDomainService;
@@ -34,7 +37,9 @@ import io.gravitee.apim.core.parameters.domain_service.ParametersDomainService;
 import io.gravitee.apim.core.plan.domain_service.CreatePlanDomainService;
 import io.gravitee.apim.core.plan.domain_service.PlanSynchronizationService;
 import io.gravitee.apim.core.policy.domain_service.PolicyValidationDomainService;
+import io.gravitee.apim.core.subscription.domain_service.AuditSubscriptionDomainService;
 import io.gravitee.apim.core.subscription.domain_service.CloseSubscriptionDomainService;
+import io.gravitee.apim.core.subscription.domain_service.NotificationSubscriptionDomainService;
 import io.gravitee.apim.infra.domain_service.api.ApiHostValidatorDomainServiceImpl;
 import io.gravitee.apim.infra.json.jackson.JacksonSpringConfiguration;
 import io.gravitee.apim.infra.sanitizer.SanitizerSpringConfiguration;
@@ -535,6 +540,26 @@ public class ResourceContextConfiguration {
     }
 
     @Bean
+    public ApiTemplateDomainService apiTemplateDomainService() {
+        return mock(ApiTemplateDomainService.class);
+    }
+
+    @Bean
+    public NotificationSubscriptionDomainService notificationSubscriptionDomainService() {
+        return mock(NotificationSubscriptionDomainService.class);
+    }
+
+    @Bean
+    public AuditSubscriptionDomainService auditSubscriptionDomainService() {
+        return mock(AuditSubscriptionDomainService.class);
+    }
+
+    @Bean
+    public GenerateApiKeyDomainService generateApiKeyDomainService() {
+        return mock(GenerateApiKeyDomainService.class);
+    }
+
+    @Bean
     public PolicyValidationDomainService policyValidationDomainService() {
         return mock(PolicyValidationDomainService.class);
     }
@@ -547,6 +572,11 @@ public class ResourceContextConfiguration {
     @Bean
     public UpdateApiDomainService updateApiDomainService() {
         return mock(UpdateApiDomainService.class);
+    }
+
+    @Bean
+    public CreateFederatedApiDomainService createFederatedApiDomainService() {
+        return mock(CreateFederatedApiDomainService.class);
     }
 
     @Bean

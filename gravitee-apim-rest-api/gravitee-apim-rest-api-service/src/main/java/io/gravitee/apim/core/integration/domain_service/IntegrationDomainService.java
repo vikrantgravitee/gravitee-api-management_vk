@@ -18,9 +18,14 @@ package io.gravitee.apim.core.integration.domain_service;
 
 import io.gravitee.apim.core.api.model.Api;
 import io.gravitee.apim.core.audit.model.AuditInfo;
+import io.gravitee.apim.core.integration.model.AssetEntity;
 import io.gravitee.apim.core.integration.model.IntegrationEntity;
+import io.gravitee.apim.core.plan.model.Plan;
+import io.gravitee.apim.core.subscription.model.SubscriptionEntity;
 import io.gravitee.common.component.LifecycleComponent;
+import io.gravitee.rest.api.model.BaseApplicationEntity;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
 import java.util.List;
 
 /**
@@ -30,9 +35,17 @@ import java.util.List;
 public interface IntegrationDomainService extends LifecycleComponent<IntegrationDomainService> {
     void startIntegration(IntegrationEntity integration);
 
-    Flowable<IntegrationEntity> getIntegrationEntities(IntegrationEntity integration);
+    Flowable<AssetEntity> getIntegrationAssets(IntegrationEntity integration);
 
-    Flowable<IntegrationEntity> fetchEntities(IntegrationEntity integration, List<IntegrationEntity> entities);
+    Flowable<AssetEntity> fetchAssets(IntegrationEntity integration, List<AssetEntity> assets);
 
-    Api importApi(IntegrationEntity entity, AuditInfo auditInfo, IntegrationEntity integration);
+    Maybe<SubscriptionEntity> subscribe(
+        String integrationId,
+        String reason,
+        Api api,
+        SubscriptionEntity subscription,
+        BaseApplicationEntity application,
+        Plan plan,
+        AuditInfo auditInfo
+    );
 }

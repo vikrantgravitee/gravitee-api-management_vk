@@ -18,17 +18,29 @@ package io.gravitee.apim.infra.domain_service.integration;
 
 import static io.gravitee.apim.core.license.domain_service.GraviteeLicenseDomainService.APIM_INTEGRATION;
 
-import io.gravitee.apim.core.api.domain_service.CreateFederatedApiDomainService;
 import io.gravitee.apim.core.api.model.Api;
+import io.gravitee.apim.core.api.model.ApiMetadata;
+import io.gravitee.apim.core.api.query_service.ApiMetadataQueryService;
+import io.gravitee.apim.core.audit.model.AuditActor;
 import io.gravitee.apim.core.audit.model.AuditInfo;
+import io.gravitee.apim.core.audit.model.event.SubscriptionAuditEvent;
+import io.gravitee.apim.core.exception.NotFoundDomainException;
+import io.gravitee.apim.core.exception.TechnicalDomainException;
 import io.gravitee.apim.core.integration.crud_service.IntegrationCrudService;
 import io.gravitee.apim.core.integration.domain_service.IntegrationDomainService;
+import io.gravitee.apim.core.integration.model.AssetEntity;
 import io.gravitee.apim.core.integration.model.IntegrationEntity;
 import io.gravitee.apim.core.license.domain_service.GraviteeLicenseDomainService;
+import io.gravitee.apim.core.plan.model.Plan;
+import io.gravitee.apim.core.subscription.crud_service.SubscriptionCrudService;
+import io.gravitee.apim.core.subscription.domain_service.AuditSubscriptionDomainService;
+import io.gravitee.apim.core.subscription.domain_service.NotificationSubscriptionDomainService;
+import io.gravitee.apim.core.subscription.model.SubscriptionEntity;
 import io.gravitee.apim.infra.adapter.IntegrationAdapter;
 import io.gravitee.common.service.AbstractService;
-import io.gravitee.definition.model.DefinitionVersion;
-import io.gravitee.definition.model.federation.FederatedApiBuilder;
+import io.gravitee.exchange.api.command.Batch;
+import io.gravitee.exchange.api.command.BatchCommand;
+import io.gravitee.exchange.api.command.BatchStatus;
 import io.gravitee.exchange.api.command.Command;
 import io.gravitee.exchange.api.command.CommandAdapter;
 import io.gravitee.exchange.api.command.CommandHandler;
@@ -44,21 +56,33 @@ import io.gravitee.integration.api.command.fetch.FetchCommandPayload;
 import io.gravitee.integration.api.command.fetch.FetchReply;
 import io.gravitee.integration.api.command.list.ListCommand;
 import io.gravitee.integration.api.command.list.ListReply;
-import io.gravitee.integration.api.model.Entity;
+import io.gravitee.integration.api.command.subscribe.SubscribeCommand;
+import io.gravitee.integration.api.command.subscribe.SubscribeCommandPayload;
+import io.gravitee.integration.api.command.subscribe.SubscribeReply;
+import io.gravitee.integration.api.model.Asset;
+import io.gravitee.integration.api.model.Subscription;
+import io.gravitee.integration.api.model.SubscriptionType;
 import io.gravitee.integration.api.plugin.IntegrationProvider;
 import io.gravitee.integration.api.plugin.IntegrationProviderFactory;
 import io.gravitee.integration.connector.command.IntegrationConnectorCommandContext;
 import io.gravitee.integration.connector.command.IntegrationConnectorCommandHandlersFactory;
 import io.gravitee.plugin.integrationprovider.IntegrationProviderPluginManager;
-import io.gravitee.rest.api.model.NewPageEntity;
-import io.gravitee.rest.api.model.PageType;
-import io.gravitee.rest.api.service.PageService;
-import io.gravitee.rest.api.service.common.GraviteeContext;
+import io.gravitee.rest.api.model.BaseApplicationEntity;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -72,15 +96,18 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
 
     private final GraviteeLicenseDomainService graviteeLicenseDomainService;
     private final ExchangeConnectorManager exchangeConnectorManager;
-
     private final ExchangeController exchangeController;
     private final IntegrationConnectorCommandHandlersFactory connectorCommandHandlersFactory;
     private final IntegrationProviderPluginManager integrationProviderPluginManager;
     private final IntegrationCrudService integrationCrudService;
+    private final SubscriptionCrudService subscriptionCrudService;
 
-    private final PageService pageService;
+    private final NotificationSubscriptionDomainService notificationSubscriptionDomainService;
 
-    private final CreateFederatedApiDomainService createFederatedApiDomainService;
+    private final AuditSubscriptionDomainService auditSubscriptionDomainService;
+
+    private final ApiMetadataQueryService apiMetadataQueryService;
+    private ExecutorService executorService;
 
     public IntegrationDomainServiceImpl(
         final GraviteeLicenseDomainService graviteeLicenseDomainService,
@@ -89,8 +116,10 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
         final IntegrationConnectorCommandHandlersFactory connectorCommandHandlersFactory,
         final IntegrationProviderPluginManager integrationProviderPluginManager,
         final IntegrationCrudService integrationCrudService,
-        final PageService pageService,
-        final CreateFederatedApiDomainService createFederatedApiDomainService
+        final SubscriptionCrudService subscriptionCrudService,
+        final NotificationSubscriptionDomainService notificationSubscriptionDomainService,
+        final AuditSubscriptionDomainService auditSubscriptionDomainService,
+        ApiMetadataQueryService apiMetadataQueryService
     ) {
         this.graviteeLicenseDomainService = graviteeLicenseDomainService;
         this.exchangeConnectorManager = exchangeConnectorManager;
@@ -98,8 +127,10 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
         this.connectorCommandHandlersFactory = connectorCommandHandlersFactory;
         this.integrationProviderPluginManager = integrationProviderPluginManager;
         this.integrationCrudService = integrationCrudService;
-        this.pageService = pageService;
-        this.createFederatedApiDomainService = createFederatedApiDomainService;
+        this.subscriptionCrudService = subscriptionCrudService;
+        this.notificationSubscriptionDomainService = notificationSubscriptionDomainService;
+        this.auditSubscriptionDomainService = auditSubscriptionDomainService;
+        this.apiMetadataQueryService = apiMetadataQueryService;
     }
 
     // TODO To be removed when the license is up to date
@@ -116,6 +147,19 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
         } else {
             log.warn("License doesn't contain Integrations feature.");
         }
+
+        executorService =
+            Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors() * 2,
+                new ThreadFactory() {
+                    private final AtomicLong counter = new AtomicLong(0);
+
+                    @Override
+                    public Thread newThread(@NotNull Runnable r) {
+                        return new Thread(r, "gio.integration-" + counter.getAndIncrement());
+                    }
+                }
+            );
     }
 
     @Override
@@ -175,7 +219,7 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
     }
 
     @Override
-    public Flowable<IntegrationEntity> getIntegrationEntities(IntegrationEntity integration) {
+    public Flowable<AssetEntity> getIntegrationAssets(IntegrationEntity integration) {
         ListCommand listCommand = new ListCommand();
         String targetId = integration.getDeploymentType() == IntegrationEntity.DeploymentType.EMBEDDED
             ? integration.getId()
@@ -183,23 +227,18 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
         return sendListCommand(listCommand, targetId)
             .flatMapPublisher(listReply -> {
                 if (listReply.getCommandStatus() == CommandStatus.SUCCEEDED) {
-                    List<IntegrationEntity> integrationEntities = listReply
-                        .getPayload()
-                        .entities()
-                        .stream()
-                        .map(IntegrationAdapter.INSTANCE::toEntity)
-                        .toList();
-                    return Flowable.fromIterable(integrationEntities);
+                    List<AssetEntity> assets = listReply.getPayload().assets().stream().map(IntegrationAdapter.INSTANCE::toEntity).toList();
+                    return Flowable.fromIterable(assets);
                 }
                 return Flowable.empty();
             });
     }
 
     @Override
-    public Flowable<IntegrationEntity> fetchEntities(IntegrationEntity integration, List<IntegrationEntity> integrationEntities) {
-        List<Entity> entities = integrationEntities.stream().map(IntegrationAdapter.INSTANCE::toEntityApi).toList();
+    public Flowable<AssetEntity> fetchAssets(IntegrationEntity integration, List<AssetEntity> assetsToImport) {
+        List<Asset> assets = assetsToImport.stream().map(IntegrationAdapter.INSTANCE::toIntegrationModel).toList();
 
-        FetchCommandPayload fetchCommandPayload = new FetchCommandPayload(entities);
+        FetchCommandPayload fetchCommandPayload = new FetchCommandPayload(assets);
         FetchCommand fetchCommand = new FetchCommand(fetchCommandPayload);
         String targetId = integration.getDeploymentType() == IntegrationEntity.DeploymentType.EMBEDDED
             ? integration.getId()
@@ -208,64 +247,77 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
             .toFlowable()
             .flatMap(fetchReply -> {
                 if (fetchReply.getCommandStatus() == CommandStatus.SUCCEEDED) {
-                    List<IntegrationEntity> fetchEntities = fetchReply
+                    List<AssetEntity> fetchAssets = fetchReply
                         .getPayload()
-                        .entities()
+                        .assets()
                         .stream()
                         .map(IntegrationAdapter.INSTANCE::toEntity)
                         .toList();
-                    return Flowable.fromIterable(fetchEntities);
+                    return Flowable.fromIterable(fetchAssets);
                 }
                 return Flowable.empty();
             });
     }
 
     @Override
-    public Api importApi(IntegrationEntity entity, AuditInfo auditInfo, IntegrationEntity integration) {
-        // Create API
-        var api = Api
+    public Maybe<SubscriptionEntity> subscribe(
+        String integrationId,
+        String reason,
+        Api api,
+        SubscriptionEntity subscription,
+        BaseApplicationEntity application,
+        Plan plan,
+        AuditInfo auditInfo
+    ) {
+        //Get integration
+        ApiMetadata apiMetadata = apiMetadataQueryService.findApiMetadata(api.getId()).get("integration");
+        if (apiMetadata == null || apiMetadata.getValue().isEmpty()) {
+            throw new TechnicalDomainException("Integration id not found for Federated API " + api.getId());
+        }
+        var integration = integrationCrudService.findById(apiMetadata.getValue());
+
+        //Find the external id of the asset using the Api
+        var externalId = api.getDefinitionContext().getOrigin(); //TODO
+        var asset = Asset.builder().id(externalId).build();
+
+        //Create Subscription using data from SubscriptionEntity, Application and Plan
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("app_id", application.getId());
+        Subscription subscriptionModel = Subscription
             .builder()
-            .version(entity.getVersion())
-            .definitionVersion(DefinitionVersion.FEDERATED)
-            .name(entity.getName())
-            .description(entity.getDescription())
-            .apiDefinitionFederated(
-                FederatedApiBuilder
-                    .aFederatedApi()
-                    .apiVersion(entity.getVersion())
-                    .name(entity.getName())
-                    .accessPoint(entity.getHost() + entity.getPath())
-                    .build()
-            )
+            .graviteeApiId(api.getId())
+            .graviteeApplicationId(application.getId())
+            .graviteeUserId(auditInfo.actor().userId())
+            .graviteeSubscriptionId(subscription.getId())
+            .graviteeEnvironmentId(auditInfo.environmentId())
+            .graviteeOrganizationId(auditInfo.organizationId())
+            .reason(reason)
+            .type(SubscriptionType.API_KEY)
+            .metadata(metadata)
             .build();
+        SubscribeCommandPayload subscribeCommandPayload = new SubscribeCommandPayload(asset, subscriptionModel);
+        SubscribeCommand subscribeCommand = new SubscribeCommand(subscribeCommandPayload);
 
-        //TODO manage context to save access point, runtime ...
+        String targetId = integration.getDeploymentType() == IntegrationEntity.DeploymentType.EMBEDDED
+            ? integration.getId()
+            : integration.getRemoteId();
 
-        var createdApiEntity = createFederatedApiDomainService.create(api, auditInfo);
+        return sendSubscribeCommand(subscribeCommand, targetId)
+            .flatMap(subscribeReply -> {
+                if (subscribeReply.getCommandStatus() == CommandStatus.SUCCEEDED) {
+                    var providerSubscription = subscribeReply.getPayload().subscription();
 
-        // Create page
-        entity
-            .getPages()
-            .forEach(page -> {
-                PageType pageType = PageType.valueOf(page.getPageType().name());
-                createPage(createdApiEntity.getId(), entity.getName(), page.getContent(), pageType, auditInfo.actor().userId());
+                    return Maybe.just(
+                        SubscriptionEntity
+                            .builder()
+                            .apiId(providerSubscription.graviteeApiId())
+                            .applicationId(providerSubscription.graviteeApplicationId())
+                            .reasonMessage(reason)
+                            .build()
+                    );
+                }
+                return Maybe.empty();
             });
-
-        log.info("API Imported {}", createdApiEntity.getId());
-        return createdApiEntity;
-    }
-
-    private void createPage(String apiId, String apiName, String content, PageType pageType, String userId) {
-        NewPageEntity newPageEntity = new NewPageEntity();
-        newPageEntity.setType(pageType);
-        newPageEntity.setName(apiName);
-        newPageEntity.setContent(content);
-
-        int order = pageService.findMaxApiPageOrderByApi(apiId) + 1;
-        newPageEntity.setOrder(order);
-        newPageEntity.setLastContributor(userId);
-
-        pageService.createPage(GraviteeContext.getExecutionContext(), apiId, newPageEntity);
     }
 
     private Single<ListReply> sendListCommand(ListCommand listCommand, String integrationId) {
@@ -280,5 +332,63 @@ public class IntegrationDomainServiceImpl extends AbstractService<IntegrationDom
             .sendCommand(fetchCommand, integrationId)
             .cast(FetchReply.class)
             .onErrorReturn(throwable -> new FetchReply(fetchCommand.getId(), throwable.getMessage()));
+    }
+
+    private Maybe<SubscribeReply> sendSubscribeCommand(SubscribeCommand subscribeCommand, String integrationId) {
+        BatchCommand subscribeBatchCommand = BatchCommand.builder().command(subscribeCommand).build();
+        Batch subscribeBatch = Batch.builder().batchCommands(List.of(subscribeBatchCommand)).targetId(integrationId).build();
+
+        return exchangeController
+            .executeBatch(subscribeBatch)
+            .flatMapMaybe(batch -> {
+                if (batch.status() == BatchStatus.SUCCEEDED) {
+                    return Maybe.just(batch.batchCommands().get(0).reply());
+                }
+                //launch watch and return empty
+                executorService.submit(() -> watchSubscribeCommand(batch.id(), subscribeCommand.getId()));
+                return Maybe.empty();
+            })
+            .cast(SubscribeReply.class)
+            .onErrorReturn(throwable -> new SubscribeReply(subscribeCommand.getId(), throwable.getMessage()));
+    }
+
+    private Disposable watchSubscribeCommand(String batchId, String subscribeCommandId) {
+        return exchangeController
+            .watchBatch(batchId)
+            .subscribeOn(Schedulers.io())
+            .map(batch -> batch.batchCommands().get(0).reply())
+            .cast(SubscribeReply.class)
+            .onErrorReturn(throwable -> new SubscribeReply(subscribeCommandId, throwable.getMessage()))
+            .flatMapCompletable(this::notifySubscribeBatchStatus)
+            .subscribe();
+    }
+
+    private Completable notifySubscribeBatchStatus(SubscribeReply reply) {
+        return Completable.fromRunnable(() -> {
+            //Check reply status and notify API Publisher
+            log.info("Subscribe reply {}", reply);
+            var subscription = reply.getPayload().subscription();
+
+            //If we have a failure, we put back the subscription status to pending and notify the api publisher
+            var subscriptionEntity = subscriptionCrudService.get(subscription.graviteeSubscriptionId());
+            var auditInfo = AuditInfo
+                .builder()
+                .actor(AuditActor.builder().userId(subscription.graviteeUserId()).build())
+                .environmentId(subscription.graviteeEnvironmentId())
+                .organizationId(subscription.graviteeOrganizationId())
+                .build();
+
+            var acceptedSubscriptionEntity = subscriptionCrudService.update(
+                subscriptionEntity.acceptBy(subscription.graviteeUserId(), null, null, subscriptionEntity.getReasonMessage())
+            );
+
+            notificationSubscriptionDomainService.triggerNotifications(auditInfo.organizationId(), acceptedSubscriptionEntity);
+            auditSubscriptionDomainService.createAuditLog(
+                subscriptionEntity,
+                acceptedSubscriptionEntity,
+                auditInfo,
+                SubscriptionAuditEvent.SUBSCRIPTION_UPDATED
+            );
+        });
     }
 }

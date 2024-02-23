@@ -168,7 +168,8 @@ public class SubscriptionQueryServiceImplTest {
                         .containsExactly(
                             Subscription.Status.ACCEPTED.name(),
                             Subscription.Status.PENDING.name(),
-                            Subscription.Status.PAUSED.name()
+                            Subscription.Status.PAUSED.name(),
+                            Subscription.Status.INTEGRATION_PROCESSING.name()
                         );
                     assertThat(criteria.getEndingAtBefore()).isEqualTo(-1);
                     assertThat(criteria.getFrom()).isEqualTo(-1);

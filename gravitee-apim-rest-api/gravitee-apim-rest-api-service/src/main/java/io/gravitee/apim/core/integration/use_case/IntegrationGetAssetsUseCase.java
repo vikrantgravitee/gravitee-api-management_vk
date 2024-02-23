@@ -18,7 +18,7 @@ package io.gravitee.apim.core.integration.use_case;
 
 import io.gravitee.apim.core.integration.crud_service.IntegrationCrudService;
 import io.gravitee.apim.core.integration.domain_service.IntegrationDomainService;
-import io.gravitee.apim.core.integration.model.IntegrationEntity;
+import io.gravitee.apim.core.integration.model.AssetEntity;
 import io.reactivex.rxjava3.core.Flowable;
 import lombok.Builder;
 
@@ -26,27 +26,27 @@ import lombok.Builder;
  * @author Remi Baptiste (remi.baptiste at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class IntegrationGetEntitiesUseCase {
+public class IntegrationGetAssetsUseCase {
 
-    private IntegrationDomainService integrationDomainService;
+    private final IntegrationDomainService integrationDomainService;
 
-    private IntegrationCrudService integrationCrudService;
+    private final IntegrationCrudService integrationCrudService;
 
-    public IntegrationGetEntitiesUseCase(IntegrationDomainService integrationDomainService, IntegrationCrudService integrationCrudService) {
+    public IntegrationGetAssetsUseCase(IntegrationDomainService integrationDomainService, IntegrationCrudService integrationCrudService) {
         this.integrationDomainService = integrationDomainService;
         this.integrationCrudService = integrationCrudService;
     }
 
-    public IntegrationGetEntitiesUseCase.Output execute(IntegrationGetEntitiesUseCase.Input input) {
+    public IntegrationGetAssetsUseCase.Output execute(IntegrationGetAssetsUseCase.Input input) {
         var integrationId = input.integrationId();
 
         var integration = integrationCrudService.findById(integrationId);
 
-        return new IntegrationGetEntitiesUseCase.Output(integrationDomainService.getIntegrationEntities(integration));
+        return new IntegrationGetAssetsUseCase.Output(integrationDomainService.getIntegrationAssets(integration));
     }
 
     @Builder
     public record Input(String integrationId) {}
 
-    public record Output(Flowable<IntegrationEntity> entities) {}
+    public record Output(Flowable<AssetEntity> assets) {}
 }

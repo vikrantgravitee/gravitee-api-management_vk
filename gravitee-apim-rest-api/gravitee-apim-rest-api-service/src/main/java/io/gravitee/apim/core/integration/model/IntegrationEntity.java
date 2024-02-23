@@ -16,8 +16,6 @@
 
 package io.gravitee.apim.core.integration.model;
 
-import io.gravitee.integration.api.model.Integration;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,10 +35,7 @@ public class IntegrationEntity {
     String name;
     String version;
     DeploymentType deploymentType;
-    String host;
-    String path;
     String description;
-    List<Page> pages;
 
     String remoteId;
     String provider;
@@ -49,6 +44,7 @@ public class IntegrationEntity {
 
     public enum Feature {
         SUBSCRIBE,
+        ANALYTICS,
     }
 
     public enum DeploymentType {

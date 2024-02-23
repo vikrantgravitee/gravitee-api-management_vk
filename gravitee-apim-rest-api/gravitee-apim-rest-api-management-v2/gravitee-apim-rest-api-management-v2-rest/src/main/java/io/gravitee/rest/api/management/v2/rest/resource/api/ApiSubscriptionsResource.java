@@ -20,6 +20,7 @@ import static java.lang.String.format;
 import io.gravitee.apim.core.api_key.use_case.RevokeApiSubscriptionApiKeyUseCase;
 import io.gravitee.apim.core.audit.model.AuditActor;
 import io.gravitee.apim.core.audit.model.AuditInfo;
+import io.gravitee.apim.core.subscription.use_case.AcceptSubscriptionUseCase;
 import io.gravitee.apim.core.subscription.use_case.CloseSubscriptionUseCase;
 import io.gravitee.common.data.domain.Page;
 import io.gravitee.common.http.MediaType;
@@ -89,11 +90,13 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -112,6 +115,9 @@ public class ApiSubscriptionsResource extends AbstractResource {
     private static final String EXPAND_PLAN = "plan";
     private static final String EXPAND_APPLICATION = "application";
     private static final String EXPAND_SUBSCRIBED_BY = "subscribedBy";
+
+    @Inject
+    private AcceptSubscriptionUseCase acceptSubscriptionUseCase;
 
     @Inject
     private CloseSubscriptionUseCase closeSubscriptionUsecase;
@@ -348,22 +354,36 @@ public class ApiSubscriptionsResource extends AbstractResource {
         @PathParam("subscriptionId") String subscriptionId,
         @Valid @NotNull AcceptSubscription acceptSubscription
     ) {
-        final SubscriptionEntity subscriptionEntity = subscriptionService.findById(subscriptionId);
+        final ExecutionContext executionContext = GraviteeContext.getExecutionContext();
+        final var user = getAuthenticatedUserDetails();
 
-        if (!subscriptionEntity.getApi().equals(apiId)) {
-            return Response.status(Response.Status.NOT_FOUND).entity(subscriptionNotFoundError(subscriptionId)).build();
-        }
-
-        final ProcessSubscriptionEntity processSubscriptionEntity = subscriptionMapper.map(acceptSubscription, subscriptionId);
-
-        return Response
-            .ok()
-            .entity(
-                subscriptionMapper.map(
-                    subscriptionService.process(GraviteeContext.getExecutionContext(), processSubscriptionEntity, getAuthenticatedUser())
+        var result = acceptSubscriptionUseCase.execute(
+            AcceptSubscriptionUseCase.Input
+                .builder()
+                .subscriptionId(subscriptionId)
+                .apiId(apiId)
+                .startingAt(Optional.ofNullable(acceptSubscription.getStartingAt()).map(OffsetDateTime::toZonedDateTime).orElse(null))
+                .endingAt(Optional.ofNullable(acceptSubscription.getEndingAt()).map(OffsetDateTime::toZonedDateTime).orElse(null))
+                .reason(acceptSubscription.getReason())
+                .customKey(acceptSubscription.getCustomApiKey())
+                .auditInfo(
+                    AuditInfo
+                        .builder()
+                        .organizationId(executionContext.getOrganizationId())
+                        .environmentId(executionContext.getEnvironmentId())
+                        .actor(
+                            AuditActor
+                                .builder()
+                                .userId(user.getUsername())
+                                .userSource(user.getSource())
+                                .userSourceId(user.getSourceId())
+                                .build()
+                        )
+                        .build()
                 )
-            )
-            .build();
+                .build()
+        );
+        return Response.ok(subscriptionMapper.map(result.subscription())).build();
     }
 
     @POST

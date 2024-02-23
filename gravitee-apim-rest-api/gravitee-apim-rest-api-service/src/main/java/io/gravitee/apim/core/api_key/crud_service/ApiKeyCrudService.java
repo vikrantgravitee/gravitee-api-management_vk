@@ -18,5 +18,6 @@ package io.gravitee.apim.core.api_key.crud_service;
 import io.gravitee.apim.core.api_key.model.ApiKeyEntity;
 
 public interface ApiKeyCrudService {
+    void create(ApiKeyEntity apiKey);
     ApiKeyEntity update(ApiKeyEntity apiKey);
 }

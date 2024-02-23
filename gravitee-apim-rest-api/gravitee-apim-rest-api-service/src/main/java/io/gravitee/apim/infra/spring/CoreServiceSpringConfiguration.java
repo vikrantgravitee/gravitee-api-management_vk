@@ -21,6 +21,7 @@ import io.gravitee.apim.core.api.domain_service.VerifyApiHostsDomainService;
 import io.gravitee.apim.core.api.domain_service.VerifyApiPathDomainService;
 import io.gravitee.apim.core.api.query_service.ApiQueryService;
 import io.gravitee.apim.core.api_key.crud_service.ApiKeyCrudService;
+import io.gravitee.apim.core.api_key.domain_service.GenerateApiKeyDomainService;
 import io.gravitee.apim.core.api_key.domain_service.RevokeApiKeyDomainService;
 import io.gravitee.apim.core.api_key.query_service.ApiKeyQueryService;
 import io.gravitee.apim.core.application.crud_service.ApplicationCrudService;
@@ -56,7 +57,9 @@ import io.gravitee.apim.core.plugin.query_service.EntrypointPluginQueryService;
 import io.gravitee.apim.core.policy.domain_service.PolicyValidationDomainService;
 import io.gravitee.apim.core.sanitizer.HtmlSanitizer;
 import io.gravitee.apim.core.subscription.crud_service.SubscriptionCrudService;
+import io.gravitee.apim.core.subscription.domain_service.AuditSubscriptionDomainService;
 import io.gravitee.apim.core.subscription.domain_service.CloseSubscriptionDomainService;
+import io.gravitee.apim.core.subscription.domain_service.NotificationSubscriptionDomainService;
 import io.gravitee.apim.core.subscription.domain_service.RejectSubscriptionDomainService;
 import io.gravitee.apim.core.subscription.query_service.SubscriptionQueryService;
 import io.gravitee.apim.core.user.crud_service.UserCrudService;
@@ -75,6 +78,19 @@ public class CoreServiceSpringConfiguration {
         JacksonJsonDiffProcessor jacksonJsonDiffProcessor
     ) {
         return new AuditDomainService(auditCrudService, userCrudService, jacksonJsonDiffProcessor);
+    }
+
+    @Bean
+    public AuditSubscriptionDomainService auditSubscriptionDomainService(AuditDomainService auditDomainService) {
+        return new AuditSubscriptionDomainService(auditDomainService);
+    }
+
+    @Bean
+    public NotificationSubscriptionDomainService notificationSubscriptionDomainService(
+        UserCrudService userCrudService,
+        TriggerNotificationDomainService triggerNotificationDomainService
+    ) {
+        return new NotificationSubscriptionDomainService(userCrudService, triggerNotificationDomainService);
     }
 
     @Bean
@@ -131,6 +147,23 @@ public class CoreServiceSpringConfiguration {
     }
 
     @Bean
+    public GenerateApiKeyDomainService generateApiKeyDomainService(
+        ApiKeyCrudService apiKeyCrudService,
+        ApiKeyQueryService apiKeyQueryService,
+        SubscriptionCrudService subscriptionCrudService,
+        AuditDomainService auditService,
+        TriggerNotificationDomainService triggerNotificationDomainService
+    ) {
+        return new GenerateApiKeyDomainService(
+            apiKeyCrudService,
+            apiKeyQueryService,
+            subscriptionCrudService,
+            auditService,
+            triggerNotificationDomainService
+        );
+    }
+
+    @Bean
     public VerifyApiPathDomainService verifyApiPathDomainService(
         ApiQueryService apiSearchService,
         InstallationAccessQueryService installationAccessQueryService,
@@ -167,10 +200,18 @@ public class CoreServiceSpringConfiguration {
     @Bean
     public CreateApiDocumentationDomainService createApiDocumentationDomainService(
         PageCrudService pageCrudService,
+        PageQueryService pageQueryService,
         PageRevisionCrudService pageRevisionCrudService,
+        ApiDocumentationDomainService apiDocumentationDomainService,
         AuditDomainService auditDomainService
     ) {
-        return new CreateApiDocumentationDomainService(pageCrudService, pageRevisionCrudService, auditDomainService);
+        return new CreateApiDocumentationDomainService(
+            pageCrudService,
+            pageQueryService,
+            pageRevisionCrudService,
+            apiDocumentationDomainService,
+            auditDomainService
+        );
     }
 
     @Bean

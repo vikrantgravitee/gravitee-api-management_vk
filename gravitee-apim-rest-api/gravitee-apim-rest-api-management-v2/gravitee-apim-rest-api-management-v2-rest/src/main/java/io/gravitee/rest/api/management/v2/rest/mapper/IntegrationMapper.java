@@ -16,7 +16,7 @@
 package io.gravitee.rest.api.management.v2.rest.mapper;
 
 import io.gravitee.rest.api.management.v2.rest.model.CreateIntegration;
-import io.gravitee.rest.api.management.v2.rest.model.IntegrationEntity;
+import io.gravitee.rest.api.management.v2.rest.model.IntegrationAsset;
 import java.util.List;
 import java.util.Set;
 import org.mapstruct.Mapper;
@@ -45,7 +45,7 @@ public interface IntegrationMapper {
         Set<io.gravitee.apim.core.integration.model.IntegrationEntity> createdIntegration
     );
 
-    List<IntegrationEntity> map(List<io.gravitee.apim.core.integration.model.IntegrationEntity> entities);
+    List<IntegrationAsset> map(List<io.gravitee.apim.core.integration.model.AssetEntity> assets);
 
-    List<io.gravitee.apim.core.integration.model.IntegrationEntity> mapEntities(List<IntegrationEntity> entities);
+    List<io.gravitee.apim.core.integration.model.AssetEntity> mapAssets(List<IntegrationAsset> assets);
 }

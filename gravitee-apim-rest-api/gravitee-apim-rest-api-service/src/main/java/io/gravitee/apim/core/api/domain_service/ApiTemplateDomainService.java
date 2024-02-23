@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.apim.core.api_key.query_service;
 
-import io.gravitee.apim.core.api_key.model.ApiKeyEntity;
-import java.util.Optional;
-import java.util.stream.Stream;
+package io.gravitee.apim.core.api.domain_service;
 
-public interface ApiKeyQueryService {
-    Optional<ApiKeyEntity> findById(String apiKeyId);
-    Stream<ApiKeyEntity> findByApplication(String applicationId);
-    Stream<ApiKeyEntity> findByKey(String key);
-    Optional<ApiKeyEntity> findByKeyAndApiId(String key, String apiId);
-    Stream<ApiKeyEntity> findBySubscription(String subscriptionId);
+import io.gravitee.apim.core.api.model.Api;
+import io.gravitee.apim.core.audit.model.AuditInfo;
+import io.gravitee.rest.api.service.common.ExecutionContext;
+
+/**
+ * @author Remi Baptiste (remi.baptiste at graviteesource.com)
+ * @author GraviteeSource Team
+ */
+public interface ApiTemplateDomainService {
+    Api findByIdForTemplates(String apiId, AuditInfo auditInfo);
 }

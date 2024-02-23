@@ -63,20 +63,26 @@ class ApiCreateDocumentationPageUseCaseTest {
     CreateApiDocumentationDomainService createApiDocumentationDomainService;
     ApiCreateDocumentationPageUseCase apiCreateDocumentationPageUsecase;
 
+    ApiDocumentationDomainService apiDocumentationDomainService;
+
     @BeforeEach
     void setUp() {
         UuidString.overrideGenerator(() -> PAGE_ID);
 
+        apiDocumentationDomainService = new ApiDocumentationDomainService(pageQueryService, planQueryService);
+
         createApiDocumentationDomainService =
             new CreateApiDocumentationDomainService(
                 pageCrudService,
+                pageQueryService,
                 pageRevisionCrudService,
+                apiDocumentationDomainService,
                 new AuditDomainService(auditCrudService, userCrudService, new JacksonJsonDiffProcessor())
             );
         apiCreateDocumentationPageUsecase =
             new ApiCreateDocumentationPageUseCase(
                 createApiDocumentationDomainService,
-                new ApiDocumentationDomainService(pageQueryService, planQueryService),
+                apiDocumentationDomainService,
                 new HomepageDomainService(pageQueryService, pageCrudService),
                 pageCrudService,
                 pageQueryService,
@@ -87,7 +93,7 @@ class ApiCreateDocumentationPageUseCaseTest {
     @AfterEach
     void tearDown() {
         Stream
-            .of(pageQueryService, pageCrudService, pageRevisionCrudService, auditCrudService, userCrudService)
+            .of(pageQueryService, pageCrudService, pageRevisionCrudService, planQueryService, auditCrudService, userCrudService)
             .forEach(InMemoryAlternative::reset);
     }
 

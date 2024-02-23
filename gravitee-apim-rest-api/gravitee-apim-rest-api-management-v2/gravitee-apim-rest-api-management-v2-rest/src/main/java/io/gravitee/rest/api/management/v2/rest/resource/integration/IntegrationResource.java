@@ -64,8 +64,8 @@ public class IntegrationResource extends AbstractResource {
         return Response.noContent().build();
     }
 
-    @Path("entities")
-    public IntegrationEntitiesResource getIntegrationEntitiesResource() {
-        return resourceContext.getResource(IntegrationEntitiesResource.class);
+    @Path("assets")
+    public IntegrationAssetsResource getIntegrationAssetsResource() {
+        return resourceContext.getResource(IntegrationAssetsResource.class);
     }
 }

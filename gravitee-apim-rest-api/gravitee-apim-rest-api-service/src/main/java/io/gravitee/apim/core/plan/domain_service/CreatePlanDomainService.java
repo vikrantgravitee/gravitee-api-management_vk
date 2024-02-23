@@ -28,6 +28,7 @@ import io.gravitee.apim.core.flow.domain_service.FlowValidationDomainService;
 import io.gravitee.apim.core.plan.crud_service.PlanCrudService;
 import io.gravitee.apim.core.plan.model.Plan;
 import io.gravitee.apim.core.plan.model.PlanWithFlows;
+import io.gravitee.definition.model.DefinitionVersion;
 import io.gravitee.definition.model.v4.flow.Flow;
 import io.gravitee.definition.model.v4.listener.Listener;
 import io.gravitee.rest.api.service.common.UuidString;
@@ -63,7 +64,7 @@ public class CreatePlanDomainService {
             throw new ApiDeprecatedException(plan.getApiId());
         }
 
-        if (api.getApiDefinitionV4().getListeners() != null) {
+        if (api.getDefinitionVersion() == DefinitionVersion.V4 && api.getApiDefinitionV4().getListeners() != null) {
             planValidatorDomainService.validatePlanSecurityAgainstEntrypoints(
                 plan.getSecurity(),
                 api.getApiDefinitionV4().getListeners().stream().map(Listener::getType).toList()
@@ -75,11 +76,14 @@ public class CreatePlanDomainService {
         planValidatorDomainService.validateGeneralConditionsPageStatus(plan);
 
         var sanitizedFlows = flowValidationDomainService.validateAndSanitize(api.getType(), flows);
-        flowValidationDomainService.validatePathParameters(
-            api.getType(),
-            api.getApiDefinitionV4().getFlows() != null ? api.getApiDefinitionV4().getFlows().stream() : Stream.empty(),
-            sanitizedFlows.stream()
-        );
+
+        if (api.getDefinitionVersion() == DefinitionVersion.V4) {
+            flowValidationDomainService.validatePathParameters(
+                api.getType(),
+                api.getApiDefinitionV4().getFlows() != null ? api.getApiDefinitionV4().getFlows().stream() : Stream.empty(),
+                sanitizedFlows.stream()
+            );
+        }
 
         var createdPlan = planCrudService.create(
             plan

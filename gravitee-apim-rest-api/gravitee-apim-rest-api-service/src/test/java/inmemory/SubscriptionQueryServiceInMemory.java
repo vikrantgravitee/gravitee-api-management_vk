@@ -51,7 +51,12 @@ public class SubscriptionQueryServiceInMemory implements SubscriptionQueryServic
             .stream()
             .filter(subscription ->
                 List
-                    .of(SubscriptionEntity.Status.ACCEPTED, SubscriptionEntity.Status.PENDING, SubscriptionEntity.Status.PAUSED)
+                    .of(
+                        SubscriptionEntity.Status.ACCEPTED,
+                        SubscriptionEntity.Status.PENDING,
+                        SubscriptionEntity.Status.PAUSED,
+                        SubscriptionEntity.Status.INTEGRATION_PROCESSING
+                    )
                     .contains(subscription.getStatus()) &&
                 subscription.getPlanId().equals(planId)
             )

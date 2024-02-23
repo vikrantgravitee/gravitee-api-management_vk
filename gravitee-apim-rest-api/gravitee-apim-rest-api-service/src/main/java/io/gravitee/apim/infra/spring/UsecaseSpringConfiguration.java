@@ -18,7 +18,9 @@ package io.gravitee.apim.infra.spring;
 import io.gravitee.apim.core.api.crud_service.ApiCrudService;
 import io.gravitee.apim.core.api.domain_service.ApiMetadataDomainService;
 import io.gravitee.apim.core.api.domain_service.ApiPolicyValidatorDomainService;
+import io.gravitee.apim.core.api.domain_service.ApiTemplateDomainService;
 import io.gravitee.apim.core.api.domain_service.CreateApiDomainService;
+import io.gravitee.apim.core.api.domain_service.CreateFederatedApiDomainService;
 import io.gravitee.apim.core.api.domain_service.DeployApiDomainService;
 import io.gravitee.apim.core.api.domain_service.UpdateApiDomainService;
 import io.gravitee.apim.core.api.domain_service.UpdateFederatedApiDomainService;
@@ -29,6 +31,7 @@ import io.gravitee.apim.core.api.use_case.ImportCRDUseCase;
 import io.gravitee.apim.core.api.use_case.UpdateFederatedApiUseCase;
 import io.gravitee.apim.core.api.use_case.VerifyApiHostsUseCase;
 import io.gravitee.apim.core.api.use_case.VerifyApiPathsUseCase;
+import io.gravitee.apim.core.api_key.domain_service.GenerateApiKeyDomainService;
 import io.gravitee.apim.core.api_key.domain_service.RevokeApiKeyDomainService;
 import io.gravitee.apim.core.api_key.query_service.ApiKeyQueryService;
 import io.gravitee.apim.core.api_key.use_case.RevokeApiSubscriptionApiKeyUseCase;
@@ -61,9 +64,9 @@ import io.gravitee.apim.core.integration.domain_service.IntegrationDomainService
 import io.gravitee.apim.core.integration.query_service.IntegrationQueryService;
 import io.gravitee.apim.core.integration.use_case.IntegrationCreateUseCase;
 import io.gravitee.apim.core.integration.use_case.IntegrationDeleteUseCase;
-import io.gravitee.apim.core.integration.use_case.IntegrationGetEntitiesUseCase;
+import io.gravitee.apim.core.integration.use_case.IntegrationGetAssetsUseCase;
 import io.gravitee.apim.core.integration.use_case.IntegrationGetUseCase;
-import io.gravitee.apim.core.integration.use_case.IntegrationImportUseCase;
+import io.gravitee.apim.core.integration.use_case.IntegrationImportAssetsUseCase;
 import io.gravitee.apim.core.integration.use_case.IntegrationRemoteCreateUseCase;
 import io.gravitee.apim.core.integration.use_case.IntegrationsGetUseCase;
 import io.gravitee.apim.core.license.domain_service.GraviteeLicenseDomainService;
@@ -88,8 +91,11 @@ import io.gravitee.apim.core.plugin.use_case.GetEndpointPluginsUseCase;
 import io.gravitee.apim.core.plugin.use_case.GetEntrypointPluginsUseCase;
 import io.gravitee.apim.core.plugin.use_case.GetPolicyPluginsUseCase;
 import io.gravitee.apim.core.subscription.crud_service.SubscriptionCrudService;
+import io.gravitee.apim.core.subscription.domain_service.AuditSubscriptionDomainService;
 import io.gravitee.apim.core.subscription.domain_service.CloseSubscriptionDomainService;
+import io.gravitee.apim.core.subscription.domain_service.NotificationSubscriptionDomainService;
 import io.gravitee.apim.core.subscription.query_service.SubscriptionQueryService;
+import io.gravitee.apim.core.subscription.use_case.AcceptSubscriptionUseCase;
 import io.gravitee.apim.core.subscription.use_case.CloseExpiredSubscriptionsUseCase;
 import io.gravitee.apim.core.subscription.use_case.CloseSubscriptionUseCase;
 import org.springframework.context.annotation.Bean;
@@ -99,6 +105,29 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({ CoreServiceSpringConfiguration.class })
 public class UsecaseSpringConfiguration {
+
+    @Bean
+    public AcceptSubscriptionUseCase acceptSubscriptionUseCase(
+        ApplicationCrudService applicationCrudService,
+        PlanCrudService planCrudService,
+        SubscriptionCrudService subscriptionCrudService,
+        ApiTemplateDomainService apiTemplateDomainService,
+        IntegrationDomainService integrationDomainService,
+        NotificationSubscriptionDomainService notificationSubscriptionDomainService,
+        AuditSubscriptionDomainService auditSubscriptionDomainService,
+        GenerateApiKeyDomainService generateApiKeyDomainService
+    ) {
+        return new AcceptSubscriptionUseCase(
+            applicationCrudService,
+            planCrudService,
+            subscriptionCrudService,
+            apiTemplateDomainService,
+            integrationDomainService,
+            notificationSubscriptionDomainService,
+            auditSubscriptionDomainService,
+            generateApiKeyDomainService
+        );
+    }
 
     @Bean
     public CloseSubscriptionUseCase closeSubscriptionUsecase(
@@ -414,19 +443,28 @@ public class UsecaseSpringConfiguration {
     }
 
     @Bean
-    public IntegrationGetEntitiesUseCase integrationGetEntitiesUseCase(
+    public IntegrationGetAssetsUseCase integrationGetEntitiesUseCase(
         IntegrationDomainService integrationDomainService,
         IntegrationCrudService integrationCrudService
     ) {
-        return new IntegrationGetEntitiesUseCase(integrationDomainService, integrationCrudService);
+        return new IntegrationGetAssetsUseCase(integrationDomainService, integrationCrudService);
     }
 
     @Bean
-    public IntegrationImportUseCase integrationImportUseCase(
+    public IntegrationImportAssetsUseCase integrationImportUseCase(
         IntegrationDomainService integrationDomainService,
-        IntegrationCrudService integrationCrudService
+        IntegrationCrudService integrationCrudService,
+        CreateApiDocumentationDomainService createApiDocumentationDomainService,
+        CreateFederatedApiDomainService createFederatedApiDomainService,
+        DocumentationValidationDomainService documentationValidationDomainService
     ) {
-        return new IntegrationImportUseCase(integrationDomainService, integrationCrudService);
+        return new IntegrationImportAssetsUseCase(
+            integrationDomainService,
+            integrationCrudService,
+            createApiDocumentationDomainService,
+            createFederatedApiDomainService,
+            documentationValidationDomainService
+        );
     }
 
     @Bean

@@ -60,7 +60,14 @@ public class SubscriptionQueryServiceImpl implements SubscriptionQueryService {
         SubscriptionCriteria criteria = SubscriptionCriteria
             .builder()
             .plans(List.of(planId))
-            .statuses(List.of(SubscriptionStatus.ACCEPTED.name(), SubscriptionStatus.PENDING.name(), SubscriptionStatus.PAUSED.name()))
+            .statuses(
+                List.of(
+                    SubscriptionStatus.ACCEPTED.name(),
+                    SubscriptionStatus.PENDING.name(),
+                    SubscriptionStatus.PAUSED.name(),
+                    SubscriptionStatus.INTEGRATION_PROCESSING.name()
+                )
+            )
             .build();
 
         try {

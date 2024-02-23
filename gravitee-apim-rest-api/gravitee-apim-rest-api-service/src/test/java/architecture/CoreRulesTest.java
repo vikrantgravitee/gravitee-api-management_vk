@@ -42,6 +42,7 @@ public class CoreRulesTest extends AbstractApimArchitectureTest {
                     "org.slf4j..",
                     "lombok..",
                     "com.fasterxml..",
+                    "io.reactivex..",
                     // Allow Spring transactional annotations until we find another way
                     "org.springframework.transaction.annotation..",
                     // Api Definition can't be in core because it is required for the Gateway

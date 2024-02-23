@@ -25,7 +25,7 @@ import lombok.Builder;
  */
 public class IntegrationGetUseCase {
 
-    private IntegrationCrudService integrationCrudService;
+    private final IntegrationCrudService integrationCrudService;
 
     public IntegrationGetUseCase(IntegrationCrudService integrationCrudService) {
         this.integrationCrudService = integrationCrudService;
