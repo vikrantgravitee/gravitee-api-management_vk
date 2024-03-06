@@ -18,34 +18,28 @@ package io.gravitee.apim.core.api.domain_service.validation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.gravitee.apim.core.api.domain_service.validation.CorsValidationService;
-import io.gravitee.apim.core.api.domain_service.validation.CorsValidationServiceImpl;
 import io.gravitee.definition.model.Cors;
-import io.gravitee.repository.exceptions.TechnicalException;
 import io.gravitee.rest.api.service.exceptions.AllowOriginNotAllowedException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author Florent CHAMFROY (florent.chamfroy at graviteesource.com)
  * @author GraviteeSource Team
  */
-@ExtendWith(MockitoExtension.class)
-class CorsValidationServiceImplTest {
+class CorsValidationServiceTest {
 
     private CorsValidationService corsValidationService;
 
     @BeforeEach
     public void setUp() {
-        corsValidationService = new CorsValidationServiceImpl();
+        corsValidationService = new CorsValidationService();
     }
 
     private static Stream<Arguments> invalidCorsOrigins() {
@@ -84,7 +78,7 @@ class CorsValidationServiceImplTest {
     }
 
     @Test
-    void shouldHaveAllowOriginNullAllowed() throws TechnicalException {
+    void shouldHaveAllowOriginNullAllowed() {
         Cors cors = new Cors();
         cors.setEnabled(true);
         cors.setAccessControlAllowOrigin(Collections.singleton("null"));
