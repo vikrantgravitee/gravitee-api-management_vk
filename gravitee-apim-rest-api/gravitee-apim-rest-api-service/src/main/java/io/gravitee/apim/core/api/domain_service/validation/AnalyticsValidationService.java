@@ -15,6 +15,7 @@
  */
 package io.gravitee.apim.core.api.domain_service.validation;
 
+import io.gravitee.apim.core.DomainService;
 import io.gravitee.apim.core.parameters.model.ParameterContext;
 import io.gravitee.apim.core.parameters.query_service.ParametersQueryService;
 import io.gravitee.common.utils.TimeProvider;
@@ -38,14 +39,13 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Florent CHAMFROY (florent.chamfroy at graviteesource.com)
  * @author GraviteeSource Team
  */
+@DomainService
 @Slf4j
-@Component
 public class AnalyticsValidationService {
 
     private static final Pattern LOGGING_MAX_DURATION_PATTERN = Pattern.compile(
