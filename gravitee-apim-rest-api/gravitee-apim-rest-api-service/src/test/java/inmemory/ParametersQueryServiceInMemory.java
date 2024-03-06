@@ -22,6 +22,7 @@ import io.gravitee.rest.api.model.parameters.Key;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public class ParametersQueryServiceInMemory implements ParametersQueryService, InMemoryAlternative<Parameter> {
 
@@ -45,6 +46,16 @@ public class ParametersQueryServiceInMemory implements ParametersQueryService, I
             .map(Parameter::getValue)
             .findFirst()
             .orElse(null);
+    }
+
+    @Override
+    public <T> List<T> findAll(Key key, Function<String, T> mapper, ParameterContext context) {
+        return parameters
+            .stream()
+            .filter(parameter -> key.equals(Key.findByKey(parameter.getKey())))
+            .map(Parameter::getValue)
+            .map(mapper)
+            .toList();
     }
 
     @Override

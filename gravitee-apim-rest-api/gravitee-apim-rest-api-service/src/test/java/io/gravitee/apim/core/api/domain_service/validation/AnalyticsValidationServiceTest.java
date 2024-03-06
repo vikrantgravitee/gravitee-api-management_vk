@@ -25,6 +25,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import io.gravitee.apim.core.parameters.model.ParameterContext;
+import io.gravitee.apim.core.parameters.query_service.ParametersQueryService;
 import io.gravitee.definition.model.v4.ApiType;
 import io.gravitee.definition.model.v4.analytics.Analytics;
 import io.gravitee.definition.model.v4.analytics.logging.Logging;
@@ -32,8 +34,6 @@ import io.gravitee.definition.model.v4.analytics.logging.LoggingMode;
 import io.gravitee.definition.model.v4.analytics.sampling.Sampling;
 import io.gravitee.definition.model.v4.analytics.sampling.SamplingType;
 import io.gravitee.rest.api.model.parameters.Key;
-import io.gravitee.rest.api.model.parameters.ParameterReferenceType;
-import io.gravitee.rest.api.service.ParameterService;
 import io.gravitee.rest.api.service.common.GraviteeContext;
 import io.gravitee.rest.api.service.v4.exception.AnalyticsMessageSamplingValueInvalidException;
 import java.time.Clock;
@@ -57,7 +57,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class AnalyticsValidationServiceTest {
 
     @Mock
-    private ParameterService parameterService;
+    private ParametersQueryService parametersQueryService;
 
     private AnalyticsValidationService analyticsValidationService;
 
@@ -69,17 +69,10 @@ public class AnalyticsValidationServiceTest {
         mockedStaticInstant = mockStatic(Instant.class);
         mockedStaticInstant.when(Instant::now).thenReturn(instant);
 
-        when(
-            parameterService.findAll(
-                eq(GraviteeContext.getExecutionContext()),
-                eq(Key.LOGGING_DEFAULT_MAX_DURATION),
-                any(Function.class),
-                eq(ParameterReferenceType.ORGANIZATION)
-            )
-        )
+        when(parametersQueryService.findAll(eq(Key.LOGGING_DEFAULT_MAX_DURATION), any(Function.class), any(ParameterContext.class)))
             .thenReturn(singletonList(1L));
 
-        analyticsValidationService = new AnalyticsValidationService(parameterService);
+        analyticsValidationService = new AnalyticsValidationService(parametersQueryService);
     }
 
     @After
@@ -128,14 +121,7 @@ public class AnalyticsValidationServiceTest {
         logging.setCondition("true");
         analytics.setLogging(logging);
 
-        when(
-            parameterService.findAll(
-                eq(GraviteeContext.getExecutionContext()),
-                eq(Key.LOGGING_DEFAULT_MAX_DURATION),
-                any(Function.class),
-                eq(ParameterReferenceType.ORGANIZATION)
-            )
-        )
+        when(parametersQueryService.findAll(eq(Key.LOGGING_DEFAULT_MAX_DURATION), any(Function.class), any(ParameterContext.class)))
             .thenReturn(singletonList(0L));
 
         Analytics sanitizedAnalytics = analyticsValidationService.validateAndSanitize(
@@ -333,14 +319,7 @@ public class AnalyticsValidationServiceTest {
         logging.setCondition("{#request.timestamp <= 2l}");
         analytics.setLogging(logging);
 
-        when(
-            parameterService.findAll(
-                eq(GraviteeContext.getExecutionContext()),
-                eq(Key.LOGGING_DEFAULT_MAX_DURATION),
-                any(Function.class),
-                eq(ParameterReferenceType.ORGANIZATION)
-            )
-        )
+        when(parametersQueryService.findAll(eq(Key.LOGGING_DEFAULT_MAX_DURATION), any(Function.class), any(ParameterContext.class)))
             .thenReturn(singletonList(3L));
 
         Analytics sanitizedAnalytics = analyticsValidationService.validateAndSanitize(
@@ -465,7 +444,7 @@ public class AnalyticsValidationServiceTest {
 
     @Test
     public void should_set_default_analytics_with_sampling_when_async_api_from_custom_settings() {
-        when(parameterService.findAll(any(), eq(Key.LOGGING_MESSAGE_SAMPLING_COUNT_DEFAULT), any(), any())).thenReturn(List.of("77"));
+        when(parametersQueryService.findAll(eq(Key.LOGGING_MESSAGE_SAMPLING_COUNT_DEFAULT), any(), any())).thenReturn(List.of("77"));
         Analytics sanitizedAnalytics = analyticsValidationService.validateAndSanitize(
             GraviteeContext.getExecutionContext(),
             ApiType.MESSAGE,

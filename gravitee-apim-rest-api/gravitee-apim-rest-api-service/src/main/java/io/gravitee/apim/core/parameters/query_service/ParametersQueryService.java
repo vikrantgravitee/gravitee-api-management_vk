@@ -17,8 +17,11 @@ package io.gravitee.apim.core.parameters.query_service;
 
 import io.gravitee.apim.core.parameters.model.ParameterContext;
 import io.gravitee.rest.api.model.parameters.Key;
+import java.util.List;
+import java.util.function.Function;
 
 public interface ParametersQueryService {
     boolean findAsBoolean(Key key, ParameterContext context);
     String findAsString(Key key, ParameterContext context);
+    <T> List<T> findAll(Key key, Function<String, T> mapper, ParameterContext context);
 }

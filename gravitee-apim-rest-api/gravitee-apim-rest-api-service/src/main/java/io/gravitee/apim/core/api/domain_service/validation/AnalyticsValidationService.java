@@ -15,6 +15,8 @@
  */
 package io.gravitee.apim.core.api.domain_service.validation;
 
+import io.gravitee.apim.core.parameters.model.ParameterContext;
+import io.gravitee.apim.core.parameters.query_service.ParametersQueryService;
 import io.gravitee.definition.model.LoggingMode;
 import io.gravitee.definition.model.v4.ApiType;
 import io.gravitee.definition.model.v4.analytics.Analytics;
@@ -23,7 +25,6 @@ import io.gravitee.definition.model.v4.analytics.sampling.Sampling;
 import io.gravitee.definition.model.v4.analytics.sampling.SamplingType;
 import io.gravitee.rest.api.model.parameters.Key;
 import io.gravitee.rest.api.model.parameters.ParameterReferenceType;
-import io.gravitee.rest.api.service.ParameterService;
 import io.gravitee.rest.api.service.common.ExecutionContext;
 import io.gravitee.rest.api.service.common.TimeBoundedCharSequence;
 import io.gravitee.rest.api.service.v4.exception.AnalyticsIncompatibleApiTypeConfigurationException;
@@ -54,10 +55,10 @@ public class AnalyticsValidationService {
     private static final String LOGGING_DELIMITER_BASE = "\\s+(\\|\\||\\&\\&)\\s+";
     private static final Duration REGEX_TIMEOUT = Duration.ofSeconds(2);
 
-    private final ParameterService parameterService;
+    private final ParametersQueryService parametersQueryService;
 
-    public AnalyticsValidationService(final ParameterService parameterService) {
-        this.parameterService = parameterService;
+    public AnalyticsValidationService(final ParametersQueryService parametersQueryService) {
+        this.parametersQueryService = parametersQueryService;
     }
 
     public Analytics validateAndSanitize(final ExecutionContext executionContext, final ApiType type, final Analytics analytics) {
@@ -79,12 +80,15 @@ public class AnalyticsValidationService {
         Sampling countSampling = new Sampling();
         countSampling.setType(SamplingType.COUNT);
         countSampling.setValue(
-            parameterService
+            parametersQueryService
                 .findAll(
-                    executionContext,
                     Key.LOGGING_MESSAGE_SAMPLING_COUNT_DEFAULT,
                     Function.identity(),
-                    ParameterReferenceType.ORGANIZATION
+                    new ParameterContext(
+                        executionContext.getEnvironmentId(),
+                        executionContext.getOrganizationId(),
+                        ParameterReferenceType.ORGANIZATION
+                    )
                 )
                 .stream()
                 .findFirst()
@@ -112,36 +116,45 @@ public class AnalyticsValidationService {
     private SamplingType.ValidationLimit getSamplingValidationLimits(ExecutionContext executionContext, Sampling messageSampling) {
         return switch (messageSampling.getType()) {
             case COUNT -> new SamplingType.ValidationLimit.CountLimit(
-                parameterService
+                parametersQueryService
                     .findAll(
-                        executionContext,
                         Key.LOGGING_MESSAGE_SAMPLING_COUNT_LIMIT,
                         Integer::valueOf,
-                        ParameterReferenceType.ORGANIZATION
+                        new ParameterContext(
+                            executionContext.getEnvironmentId(),
+                            executionContext.getOrganizationId(),
+                            ParameterReferenceType.ORGANIZATION
+                        )
                     )
                     .stream()
                     .findFirst()
                     .orElse(Integer.valueOf(Key.LOGGING_MESSAGE_SAMPLING_COUNT_LIMIT.defaultValue()))
             );
             case PROBABILITY -> new SamplingType.ValidationLimit.ProbabilityLimit(
-                parameterService
+                parametersQueryService
                     .findAll(
-                        executionContext,
                         Key.LOGGING_MESSAGE_SAMPLING_PROBABILISTIC_LIMIT,
                         Double::valueOf,
-                        ParameterReferenceType.ORGANIZATION
+                        new ParameterContext(
+                            executionContext.getEnvironmentId(),
+                            executionContext.getOrganizationId(),
+                            ParameterReferenceType.ORGANIZATION
+                        )
                     )
                     .stream()
                     .findFirst()
                     .orElse(Double.valueOf(Key.LOGGING_MESSAGE_SAMPLING_PROBABILISTIC_LIMIT.defaultValue()))
             );
             case TEMPORAL -> new SamplingType.ValidationLimit.TemporalLimit(
-                parameterService
+                parametersQueryService
                     .findAll(
-                        executionContext,
                         Key.LOGGING_MESSAGE_SAMPLING_TEMPORAL_LIMIT,
                         Function.identity(),
-                        ParameterReferenceType.ORGANIZATION
+                        new ParameterContext(
+                            executionContext.getEnvironmentId(),
+                            executionContext.getOrganizationId(),
+                            ParameterReferenceType.ORGANIZATION
+                        )
                     )
                     .stream()
                     .findFirst()
@@ -189,8 +202,16 @@ public class AnalyticsValidationService {
     }
 
     private String computeMaxDurationCondition(final ExecutionContext executionContext, final String existingCondition) {
-        Optional<Long> optionalMaxDuration = parameterService
-            .findAll(executionContext, Key.LOGGING_DEFAULT_MAX_DURATION, Long::valueOf, ParameterReferenceType.ORGANIZATION)
+        Optional<Long> optionalMaxDuration = parametersQueryService
+            .findAll(
+                Key.LOGGING_DEFAULT_MAX_DURATION,
+                Long::valueOf,
+                new ParameterContext(
+                    executionContext.getEnvironmentId(),
+                    executionContext.getOrganizationId(),
+                    ParameterReferenceType.ORGANIZATION
+                )
+            )
             .stream()
             .findFirst();
         if (optionalMaxDuration.isPresent() && optionalMaxDuration.get() > 0) {

@@ -20,6 +20,8 @@ import io.gravitee.apim.core.parameters.query_service.ParametersQueryService;
 import io.gravitee.rest.api.model.parameters.Key;
 import io.gravitee.rest.api.service.ParameterService;
 import io.gravitee.rest.api.service.common.ExecutionContext;
+import java.util.List;
+import java.util.function.Function;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,5 +45,15 @@ public class ParameterQueryServiceLegacyWrapper implements ParametersQueryServic
     @Override
     public String findAsString(Key key, ParameterContext context) {
         return parameterService.find(new ExecutionContext(context.organizationId(), context.environmentId()), key, context.referenceType());
+    }
+
+    @Override
+    public <T> List<T> findAll(Key key, Function<String, T> mapper, ParameterContext context) {
+        return parameterService.findAll(
+            new ExecutionContext(context.organizationId(), context.environmentId()),
+            key,
+            mapper,
+            context.referenceType()
+        );
     }
 }
