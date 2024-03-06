@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.rest.api.service.v4.impl.validation;
+package io.gravitee.apim.core.api.domain_service.validation;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
@@ -25,6 +25,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import io.gravitee.apim.core.api.domain_service.validation.AnalyticsValidationService;
+import io.gravitee.apim.core.api.domain_service.validation.AnalyticsValidationServiceImpl;
 import io.gravitee.definition.model.v4.ApiType;
 import io.gravitee.definition.model.v4.analytics.Analytics;
 import io.gravitee.definition.model.v4.analytics.logging.Logging;
@@ -36,7 +38,6 @@ import io.gravitee.rest.api.model.parameters.ParameterReferenceType;
 import io.gravitee.rest.api.service.ParameterService;
 import io.gravitee.rest.api.service.common.GraviteeContext;
 import io.gravitee.rest.api.service.v4.exception.AnalyticsMessageSamplingValueInvalidException;
-import io.gravitee.rest.api.service.v4.validation.AnalyticsValidationService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
