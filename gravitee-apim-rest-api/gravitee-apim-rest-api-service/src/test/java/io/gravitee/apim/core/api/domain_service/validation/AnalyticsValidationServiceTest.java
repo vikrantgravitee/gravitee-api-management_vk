@@ -22,11 +22,11 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import io.gravitee.apim.core.parameters.model.ParameterContext;
 import io.gravitee.apim.core.parameters.query_service.ParametersQueryService;
+import io.gravitee.common.utils.TimeProvider;
 import io.gravitee.definition.model.v4.ApiType;
 import io.gravitee.definition.model.v4.analytics.Analytics;
 import io.gravitee.definition.model.v4.analytics.logging.Logging;
@@ -46,7 +46,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
@@ -61,15 +60,12 @@ public class AnalyticsValidationServiceTest {
 
     private AnalyticsValidationService analyticsValidationService;
 
-    MockedStatic<Instant> mockedStaticInstant;
-
     @Before
     public void setUp() throws Exception {
         Instant instant = Instant.now(Clock.fixed(Instant.ofEpochMilli(0), ZoneOffset.UTC));
-        mockedStaticInstant = mockStatic(Instant.class);
-        mockedStaticInstant.when(Instant::now).thenReturn(instant);
+        TimeProvider.overrideClock(Clock.fixed(instant, ZoneOffset.UTC));
 
-        when(parametersQueryService.findAll(eq(Key.LOGGING_DEFAULT_MAX_DURATION), any(Function.class), any(ParameterContext.class)))
+        when(parametersQueryService.findAll(eq(Key.LOGGING_DEFAULT_MAX_DURATION), any(), any(ParameterContext.class)))
             .thenReturn(singletonList(1L));
 
         analyticsValidationService = new AnalyticsValidationService(parametersQueryService);
@@ -77,7 +73,7 @@ public class AnalyticsValidationServiceTest {
 
     @After
     public void tearDown() throws Exception {
-        mockedStaticInstant.close();
+        TimeProvider.reset();
     }
 
     @Test

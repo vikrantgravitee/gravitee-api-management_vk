@@ -17,6 +17,7 @@ package io.gravitee.apim.core.api.domain_service.validation;
 
 import io.gravitee.apim.core.parameters.model.ParameterContext;
 import io.gravitee.apim.core.parameters.query_service.ParametersQueryService;
+import io.gravitee.common.utils.TimeProvider;
 import io.gravitee.definition.model.LoggingMode;
 import io.gravitee.definition.model.v4.ApiType;
 import io.gravitee.definition.model.v4.analytics.Analytics;
@@ -31,7 +32,6 @@ import io.gravitee.rest.api.service.v4.exception.AnalyticsIncompatibleApiTypeCon
 import io.gravitee.rest.api.service.v4.exception.AnalyticsMessageSamplingValueInvalidException;
 import io.gravitee.rest.api.service.v4.exception.LoggingInvalidConfigurationException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -215,7 +215,7 @@ public class AnalyticsValidationService {
             .stream()
             .findFirst();
         if (optionalMaxDuration.isPresent() && optionalMaxDuration.get() > 0) {
-            long maxEndDate = Instant.now().toEpochMilli() + optionalMaxDuration.get();
+            long maxEndDate = TimeProvider.instantNow().toEpochMilli() + optionalMaxDuration.get();
 
             // if no condition set, add one
             if (existingCondition == null || existingCondition.isEmpty()) {
