@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import io.gravitee.apim.core.api.domain_service.ApiHostValidatorDomainService;
 import io.gravitee.apim.core.api.domain_service.VerifyApiHostsDomainService;
 import io.gravitee.apim.core.api.domain_service.VerifyApiPathDomainService;
+import io.gravitee.apim.core.api.domain_service.validation.CorsValidationService;
 import io.gravitee.apim.core.api.exception.InvalidHostException;
 import io.gravitee.apim.core.api.exception.InvalidPathsException;
 import io.gravitee.apim.core.api.query_service.ApiQueryService;
@@ -57,7 +58,6 @@ import io.gravitee.rest.api.service.v4.exception.ListenerEntrypointUnsupportedDl
 import io.gravitee.rest.api.service.v4.exception.ListenerEntrypointUnsupportedListenerTypeException;
 import io.gravitee.rest.api.service.v4.exception.ListenerEntrypointUnsupportedQosException;
 import io.gravitee.rest.api.service.v4.exception.ListenersDuplicatedException;
-import io.gravitee.rest.api.service.v4.validation.CorsValidationService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

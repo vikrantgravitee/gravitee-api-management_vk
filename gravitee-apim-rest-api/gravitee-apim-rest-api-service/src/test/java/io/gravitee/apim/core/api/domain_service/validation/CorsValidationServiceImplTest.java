@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.rest.api.service.v4.impl.validation;
+package io.gravitee.apim.core.api.domain_service.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.gravitee.apim.core.api.domain_service.validation.CorsValidationService;
+import io.gravitee.apim.core.api.domain_service.validation.CorsValidationServiceImpl;
 import io.gravitee.definition.model.Cors;
 import io.gravitee.repository.exceptions.TechnicalException;
 import io.gravitee.rest.api.service.exceptions.AllowOriginNotAllowedException;
-import io.gravitee.rest.api.service.v4.validation.CorsValidationService;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
