@@ -15,19 +15,19 @@
  */
 package io.gravitee.apim.core.api.domain_service.validation;
 
+import io.gravitee.apim.core.DomainService;
 import io.gravitee.definition.model.Cors;
 import io.gravitee.rest.api.service.exceptions.AllowOriginNotAllowedException;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Florent CHAMFROY (florent.chamfroy at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Component
+@DomainService
 public class CorsValidationService {
 
     private static final Pattern CORS_REGEX_PATTERN = Pattern.compile("^((\\*)|(null)|(^(([^:\\/?#]+):)?(\\/\\/([^\\/?#]*))?))$");
