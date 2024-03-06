@@ -25,8 +25,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import io.gravitee.apim.core.api.domain_service.validation.AnalyticsValidationService;
-import io.gravitee.apim.core.api.domain_service.validation.AnalyticsValidationServiceImpl;
 import io.gravitee.definition.model.v4.ApiType;
 import io.gravitee.definition.model.v4.analytics.Analytics;
 import io.gravitee.definition.model.v4.analytics.logging.Logging;
@@ -56,7 +54,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @author GraviteeSource Team
  */
 @RunWith(MockitoJUnitRunner.class)
-public class AnalyticsValidationServiceImplTest {
+public class AnalyticsValidationServiceTest {
 
     @Mock
     private ParameterService parameterService;
@@ -81,7 +79,7 @@ public class AnalyticsValidationServiceImplTest {
         )
             .thenReturn(singletonList(1L));
 
-        analyticsValidationService = new AnalyticsValidationServiceImpl(parameterService);
+        analyticsValidationService = new AnalyticsValidationService(parameterService);
     }
 
     @After
