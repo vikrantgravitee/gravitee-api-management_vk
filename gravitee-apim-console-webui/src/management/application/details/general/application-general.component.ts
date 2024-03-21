@@ -22,7 +22,11 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { SnackBarService } from '../../../../services-ngx/snack-bar.service';
 import { ApplicationService } from '../../../../services-ngx/application.service';
 import { Application, ApplicationType } from '../../../../entities/application/application';
-import { GioConfirmAndValidateDialogComponent, GioConfirmAndValidateDialogData } from "@gravitee/ui-particles-angular";
+import {
+  GIO_DIALOG_WIDTH,
+  GioConfirmAndValidateDialogComponent,
+  GioConfirmAndValidateDialogData
+} from "@gravitee/ui-particles-angular";
 import { MatDialog } from "@angular/material/dialog";
 
 @Component({
@@ -167,12 +171,12 @@ export class ApplicationGeneralComponent implements OnInit {
   deleteApplication() {
     this.matDialog
       .open<GioConfirmAndValidateDialogComponent, GioConfirmAndValidateDialogData>(GioConfirmAndValidateDialogComponent, {
-        width: '500px',
+        width: GIO_DIALOG_WIDTH.MEDIUM,
         data: {
           title: `Delete Application`,
           content: `Are you sure you want to delete the Application?`,
           confirmButton: `Yes, delete it`,
-          validationMessage: `Please, type in the name of the api <code>${this.initialApplication.name}</code> to confirm.`,
+          validationMessage: `Please, type in the name of the application <code>${this.initialApplication.name}</code> to confirm.`,
           validationValue: this.initialApplication.name,
           warning: `This operation is irreversible.`,
         },
@@ -191,8 +195,7 @@ export class ApplicationGeneralComponent implements OnInit {
         takeUntil(this.unsubscribe$),
       )
       .subscribe(() => {
-        this.router.navigate(['..'], { relativeTo: this.activatedRoute });
+        this.router.navigate(['../../'], { relativeTo: this.activatedRoute });
       });
-
   }
 }
