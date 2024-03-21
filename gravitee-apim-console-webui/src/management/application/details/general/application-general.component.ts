@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 import { Component, OnInit } from '@angular/core';
-import { catchError, filter, map, switchMap, takeUntil, tap } from "rxjs/operators";
-import { combineLatest, EMPTY, Subject } from "rxjs";
+import { catchError, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { combineLatest, EMPTY, Subject } from 'rxjs';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute, Router } from '@angular/router';
+import { GIO_DIALOG_WIDTH, GioConfirmAndValidateDialogComponent, GioConfirmAndValidateDialogData } from '@gravitee/ui-particles-angular';
+import { MatDialog } from '@angular/material/dialog';
 
 import { SnackBarService } from '../../../../services-ngx/snack-bar.service';
 import { ApplicationService } from '../../../../services-ngx/application.service';
 import { Application, ApplicationType } from '../../../../entities/application/application';
-import {
-  GIO_DIALOG_WIDTH,
-  GioConfirmAndValidateDialogComponent,
-  GioConfirmAndValidateDialogData
-} from "@gravitee/ui-particles-angular";
-import { MatDialog } from "@angular/material/dialog";
 
 @Component({
   selector: 'application-general',

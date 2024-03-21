@@ -175,5 +175,4 @@ export class ApplicationService {
   delete(applicationId: string): Observable<Application> {
     return this.http.delete<Application>(`${this.constants.env.baseURL}/applications/${applicationId}/`);
   }
-
 }
