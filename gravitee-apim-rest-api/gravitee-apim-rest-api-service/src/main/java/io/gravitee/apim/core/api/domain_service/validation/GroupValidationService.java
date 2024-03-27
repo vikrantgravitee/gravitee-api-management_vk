@@ -17,6 +17,7 @@ package io.gravitee.apim.core.api.domain_service.validation;
 
 import static java.util.stream.Collectors.toSet;
 
+import io.gravitee.apim.core.DomainService;
 import io.gravitee.repository.management.model.GroupEvent;
 import io.gravitee.rest.api.model.GroupEntity;
 import io.gravitee.rest.api.model.MembershipEntity;
@@ -34,13 +35,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
-@Component
+@DomainService
 public class GroupValidationService {
 
     private final GroupService groupService;
