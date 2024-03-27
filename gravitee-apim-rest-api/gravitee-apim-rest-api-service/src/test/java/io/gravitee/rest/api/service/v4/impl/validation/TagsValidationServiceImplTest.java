@@ -16,17 +16,18 @@
 package io.gravitee.rest.api.service.v4.impl.validation;
 
 import static java.util.Collections.emptySet;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.gravitee.apim.core.api.domain_service.validation.TagValidationService;
+import io.gravitee.apim.core.tag.query_service.TagQueryService;
 import io.gravitee.definition.model.DefinitionVersion;
 import io.gravitee.repository.management.model.Api;
-import io.gravitee.rest.api.service.TagService;
 import io.gravitee.rest.api.service.common.GraviteeContext;
 import io.gravitee.rest.api.service.exceptions.TagNotAllowedException;
 import io.gravitee.rest.api.service.v4.validation.TagsValidationService;
@@ -45,7 +46,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class TagsValidationServiceImplTest {
 
     @Mock
-    private TagService tagService;
+    private TagQueryService tagQueryService;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -54,7 +55,7 @@ public class TagsValidationServiceImplTest {
 
     @Before
     public void before() {
-        tagsValidationService = new TagsValidationServiceImpl(tagService, objectMapper);
+        tagsValidationService = new TagsValidationServiceImpl(new TagValidationService(tagQueryService), objectMapper);
     }
 
     @Test
@@ -63,36 +64,36 @@ public class TagsValidationServiceImplTest {
         Set<String> newTags = Set.of("public");
         Set<String> tags = tagsValidationService.validateAndSanitize(GraviteeContext.getExecutionContext(), oldTags, newTags);
 
-        assertEquals(newTags, tags);
+        assertThat(tags).isEqualTo(newTags);
     }
 
     @Test
     public void shouldReturnValidatedTagsWithAllowedTag() {
         Set<String> oldTags = Set.of("public");
         Set<String> newTags = Set.of("private");
-        when(tagService.findByUser(any(), any(), any())).thenReturn(Set.of("public", "private"));
+        when(tagQueryService.findByUser(any(), any())).thenReturn(Set.of("public", "private"));
 
         Set<String> tags = tagsValidationService.validateAndSanitize(GraviteeContext.getExecutionContext(), oldTags, newTags);
 
-        assertEquals(newTags, tags);
+        assertThat(tags).isEqualTo(newTags);
     }
 
     @Test
     public void shouldReturnValidatedTagsWithAllowedTags() {
         Set<String> oldTags = Set.of("public");
         Set<String> newTags = Set.of("public", "private");
-        when(tagService.findByUser(any(), any(), any())).thenReturn(Set.of("public", "private"));
+        when(tagQueryService.findByUser(any(), any())).thenReturn(Set.of("public", "private"));
 
         Set<String> tags = tagsValidationService.validateAndSanitize(GraviteeContext.getExecutionContext(), oldTags, newTags);
 
-        assertEquals(newTags, tags);
+        assertThat(tags).isEqualTo(newTags);
     }
 
     @Test
     public void shouldNotUpdateWithNotAllowedTag() {
         Set<String> oldTags = Set.of("public");
         Set<String> newTags = Set.of("private");
-        when(tagService.findByUser(any(), any(), any())).thenReturn(Set.of());
+        when(tagQueryService.findByUser(any(), any())).thenReturn(Set.of());
         assertThatExceptionOfType(TagNotAllowedException.class)
             .isThrownBy(() -> tagsValidationService.validateAndSanitize(GraviteeContext.getExecutionContext(), oldTags, newTags));
     }
@@ -101,7 +102,7 @@ public class TagsValidationServiceImplTest {
     public void shouldNotUpdateWithExistingNotAllowedTag() {
         Set<String> oldTags = Set.of("public");
         Set<String> newTags = Set.of("private");
-        when(tagService.findByUser(any(), any(), any())).thenReturn(Set.of("public"));
+        when(tagQueryService.findByUser(any(), any())).thenReturn(Set.of("public"));
         assertThatExceptionOfType(TagNotAllowedException.class)
             .isThrownBy(() -> tagsValidationService.validateAndSanitize(GraviteeContext.getExecutionContext(), oldTags, newTags));
     }
@@ -110,7 +111,7 @@ public class TagsValidationServiceImplTest {
     public void shouldNotUpdateWithExistingNotAllowedTags() {
         Set<String> oldTags = Set.of("public", "private");
         Set<String> newTags = Set.of("private");
-        when(tagService.findByUser(any(), any(), any())).thenReturn(Set.of("private"));
+        when(tagQueryService.findByUser(any(), any())).thenReturn(Set.of("private"));
         assertThatExceptionOfType(TagNotAllowedException.class)
             .isThrownBy(() -> tagsValidationService.validateAndSanitize(GraviteeContext.getExecutionContext(), oldTags, newTags));
     }

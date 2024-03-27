@@ -23,6 +23,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.gravitee.apim.core.api.domain_service.validation.AnalyticsValidationService;
 import io.gravitee.apim.core.api.domain_service.validation.ApiTypeValidationService;
+import io.gravitee.apim.core.api.domain_service.validation.TagValidationService;
 import io.gravitee.definition.model.DefinitionVersion;
 import io.gravitee.definition.model.v4.flow.Flow;
 import io.gravitee.definition.model.v4.plan.PlanStatus;
@@ -40,7 +41,7 @@ import io.gravitee.rest.api.service.exceptions.DefinitionVersionException;
 import io.gravitee.rest.api.service.exceptions.DynamicPropertiesInvalidException;
 import io.gravitee.rest.api.service.exceptions.InvalidDataException;
 import io.gravitee.rest.api.service.exceptions.LifecycleStateChangeNotAllowedException;
-import io.gravitee.rest.api.service.impl.TransactionalService;
+import io.gravitee.rest.api.service.impl.AbstractService;
 import io.gravitee.rest.api.service.v4.ApiServicePluginService;
 import io.gravitee.rest.api.service.v4.PlanSearchService;
 import io.gravitee.rest.api.service.v4.validation.ApiValidationService;
@@ -51,7 +52,6 @@ import io.gravitee.rest.api.service.v4.validation.ListenerValidationService;
 import io.gravitee.rest.api.service.v4.validation.PathParametersValidationService;
 import io.gravitee.rest.api.service.v4.validation.PlanValidationService;
 import io.gravitee.rest.api.service.v4.validation.ResourcesValidationService;
-import io.gravitee.rest.api.service.v4.validation.TagsValidationService;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
@@ -63,10 +63,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class ApiValidationServiceImpl extends TransactionalService implements ApiValidationService {
+public class ApiValidationServiceImpl extends AbstractService implements ApiValidationService {
 
     private final ApiTypeValidationService apiTypeValidationService;
-    private final TagsValidationService tagsValidationService;
+    private final TagValidationService tagsValidationService;
     private final GroupValidationService groupValidationService;
     private final ListenerValidationService listenerValidationService;
     private final EndpointGroupsValidationService endpointGroupsValidationService;
@@ -80,7 +80,7 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
 
     public ApiValidationServiceImpl(
         ApiTypeValidationService apiTypeValidationService,
-        final TagsValidationService tagsValidationService,
+        final TagValidationService tagsValidationService,
         final GroupValidationService groupValidationService,
         final ListenerValidationService listenerValidationService,
         final EndpointGroupsValidationService endpointGroupsValidationService,
@@ -117,7 +117,14 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
         // Validate API Type
         apiTypeValidationService.validate(null, newApiEntity.getType());
         // Validate and clean tags
-        newApiEntity.setTags(tagsValidationService.validateAndSanitize(executionContext, null, newApiEntity.getTags()));
+        newApiEntity.setTags(
+            tagsValidationService.validateAndSanitize(
+                null,
+                newApiEntity.getTags(),
+                getAuthenticatedUsername(),
+                executionContext.getOrganizationId()
+            )
+        );
         // Validate and clean groups
         newApiEntity.setGroups(
             groupValidationService.validateAndSanitize(executionContext, null, newApiEntity.getGroups(), primaryOwnerEntity)
@@ -164,7 +171,12 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
         updateApiEntity.setLifecycleState(this.validateAndSanitizeLifecycleState(existingApiEntity, updateApiEntity));
         // Validate and clean tags
         updateApiEntity.setTags(
-            tagsValidationService.validateAndSanitize(executionContext, existingApiEntity.getTags(), updateApiEntity.getTags())
+            tagsValidationService.validateAndSanitize(
+                existingApiEntity.getTags(),
+                updateApiEntity.getTags(),
+                getAuthenticatedUsername(),
+                executionContext.getOrganizationId()
+            )
         );
         // Validate and clean groups
         updateApiEntity.setGroups(
@@ -224,7 +236,14 @@ public class ApiValidationServiceImpl extends TransactionalService implements Ap
         // Validate and clean lifecycle state. In creation, lifecycle state can't be set.
         apiEntity.setLifecycleState(null);
         // Validate and clean tags
-        apiEntity.setTags(tagsValidationService.validateAndSanitize(executionContext, null, apiEntity.getTags()));
+        apiEntity.setTags(
+            tagsValidationService.validateAndSanitize(
+                null,
+                apiEntity.getTags(),
+                getAuthenticatedUsername(),
+                executionContext.getOrganizationId()
+            )
+        );
         // Validate and clean groups
         apiEntity.setGroups(groupValidationService.validateAndSanitize(executionContext, null, apiEntity.getGroups(), primaryOwnerEntity));
         // Validate and clean listeners

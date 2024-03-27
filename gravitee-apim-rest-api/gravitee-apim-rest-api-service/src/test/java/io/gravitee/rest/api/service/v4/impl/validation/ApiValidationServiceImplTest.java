@@ -32,10 +32,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import io.gravitee.apim.core.api.domain_service.validation.AnalyticsValidationService;
 import io.gravitee.apim.core.api.domain_service.validation.ApiTypeValidationService;
+import io.gravitee.apim.core.api.domain_service.validation.TagValidationService;
 import io.gravitee.definition.model.DefinitionVersion;
 import io.gravitee.definition.model.v4.ApiType;
 import io.gravitee.definition.model.v4.plan.PlanStatus;
@@ -61,10 +61,10 @@ import io.gravitee.rest.api.service.v4.validation.ListenerValidationService;
 import io.gravitee.rest.api.service.v4.validation.PathParametersValidationService;
 import io.gravitee.rest.api.service.v4.validation.PlanValidationService;
 import io.gravitee.rest.api.service.v4.validation.ResourcesValidationService;
-import io.gravitee.rest.api.service.v4.validation.TagsValidationService;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,8 +78,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ApiValidationServiceImplTest {
 
+    private static final String ORGANIZATION_ID = "organization-id";
+
     @Mock
-    private TagsValidationService tagsValidationService;
+    private TagValidationService tagsValidationService;
 
     @Mock
     private GroupValidationService groupValidationService;
@@ -130,6 +132,13 @@ public class ApiValidationServiceImplTest {
                 pathParametersValidationService,
                 apiServicePluginService
             );
+
+        GraviteeContext.setCurrentOrganization(ORGANIZATION_ID);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        GraviteeContext.cleanContext();
     }
 
     @Test
@@ -139,7 +148,7 @@ public class ApiValidationServiceImplTest {
         newApiEntity.setType(ApiType.PROXY);
         apiValidationService.validateAndSanitizeNewApi(GraviteeContext.getExecutionContext(), newApiEntity, primaryOwnerEntity);
 
-        verify(tagsValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null);
+        verify(tagsValidationService, times(1)).validateAndSanitize(eq(null), eq(null), any(), eq(ORGANIZATION_ID));
         verify(groupValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null, primaryOwnerEntity);
         verify(listenerValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null, null);
         verify(endpointGroupsValidationService, times(1)).validateAndSanitize(newApiEntity.getType(), null);
@@ -161,7 +170,7 @@ public class ApiValidationServiceImplTest {
 
         assertNull(apiEntity.getLifecycleState());
 
-        verify(tagsValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, Set.of());
+        verify(tagsValidationService, times(1)).validateAndSanitize(eq(null), eq(Set.of()), any(), eq(ORGANIZATION_ID));
         verify(groupValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null, primaryOwnerEntity);
         verify(listenerValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null, null);
         verify(endpointGroupsValidationService, times(1)).validateAndSanitize(apiEntity.getType(), null);

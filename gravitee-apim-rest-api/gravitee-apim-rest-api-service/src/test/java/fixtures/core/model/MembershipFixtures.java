@@ -63,4 +63,8 @@ public class MembershipFixtures {
             .roleId(applicationPrimaryOwnerRoleId(organizationId))
             .build();
     }
+
+    public static Membership aGroupMembership(String groupId) {
+        return BASE.get().referenceType(Membership.ReferenceType.GROUP).referenceId(groupId).build();
+    }
 }
