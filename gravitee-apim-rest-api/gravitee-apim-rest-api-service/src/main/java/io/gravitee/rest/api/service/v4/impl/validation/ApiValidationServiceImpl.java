@@ -23,6 +23,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import io.gravitee.apim.core.api.domain_service.validation.AnalyticsValidationService;
 import io.gravitee.apim.core.api.domain_service.validation.ApiTypeValidationService;
+import io.gravitee.apim.core.api.domain_service.validation.GroupValidationService;
 import io.gravitee.apim.core.api.domain_service.validation.TagValidationService;
 import io.gravitee.definition.model.DefinitionVersion;
 import io.gravitee.definition.model.v4.flow.Flow;
@@ -47,7 +48,6 @@ import io.gravitee.rest.api.service.v4.PlanSearchService;
 import io.gravitee.rest.api.service.v4.validation.ApiValidationService;
 import io.gravitee.rest.api.service.v4.validation.EndpointGroupsValidationService;
 import io.gravitee.rest.api.service.v4.validation.FlowValidationService;
-import io.gravitee.rest.api.service.v4.validation.GroupValidationService;
 import io.gravitee.rest.api.service.v4.validation.ListenerValidationService;
 import io.gravitee.rest.api.service.v4.validation.PathParametersValidationService;
 import io.gravitee.rest.api.service.v4.validation.PlanValidationService;

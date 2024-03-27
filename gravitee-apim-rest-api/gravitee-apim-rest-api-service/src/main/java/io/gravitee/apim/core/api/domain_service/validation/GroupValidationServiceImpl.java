@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.rest.api.service.v4.impl.validation;
+package io.gravitee.apim.core.api.domain_service.validation;
 
 import static java.util.stream.Collectors.toSet;
 
+import io.gravitee.apim.core.api.domain_service.validation.GroupValidationService;
 import io.gravitee.repository.management.model.GroupEvent;
 import io.gravitee.rest.api.model.GroupEntity;
 import io.gravitee.rest.api.model.MembershipEntity;
@@ -30,7 +31,6 @@ import io.gravitee.rest.api.service.common.ExecutionContext;
 import io.gravitee.rest.api.service.exceptions.GroupsNotFoundException;
 import io.gravitee.rest.api.service.exceptions.InvalidDataException;
 import io.gravitee.rest.api.service.impl.TransactionalService;
-import io.gravitee.rest.api.service.v4.validation.GroupValidationService;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
