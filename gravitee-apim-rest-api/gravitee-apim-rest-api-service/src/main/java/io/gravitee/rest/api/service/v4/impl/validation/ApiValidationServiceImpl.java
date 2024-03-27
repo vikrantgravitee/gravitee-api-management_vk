@@ -127,7 +127,16 @@ public class ApiValidationServiceImpl extends AbstractService implements ApiVali
         );
         // Validate and clean groups
         newApiEntity.setGroups(
-            groupValidationService.validateAndSanitize(executionContext, null, newApiEntity.getGroups(), primaryOwnerEntity)
+            groupValidationService.validateAndSanitize(
+                newApiEntity.getGroups(),
+                executionContext.getEnvironmentId(),
+                new io.gravitee.apim.core.membership.model.PrimaryOwnerEntity(
+                    primaryOwnerEntity.getId(),
+                    primaryOwnerEntity.getEmail(),
+                    primaryOwnerEntity.getDisplayName(),
+                    io.gravitee.apim.core.membership.model.PrimaryOwnerEntity.Type.valueOf(primaryOwnerEntity.getType())
+                )
+            )
         );
         // Validate and clean listeners
         newApiEntity.setListeners(
@@ -181,10 +190,14 @@ public class ApiValidationServiceImpl extends AbstractService implements ApiVali
         // Validate and clean groups
         updateApiEntity.setGroups(
             groupValidationService.validateAndSanitize(
-                executionContext,
-                updateApiEntity.getId(),
                 updateApiEntity.getGroups(),
-                primaryOwnerEntity
+                executionContext.getEnvironmentId(),
+                new io.gravitee.apim.core.membership.model.PrimaryOwnerEntity(
+                    primaryOwnerEntity.getId(),
+                    primaryOwnerEntity.getEmail(),
+                    primaryOwnerEntity.getDisplayName(),
+                    io.gravitee.apim.core.membership.model.PrimaryOwnerEntity.Type.valueOf(primaryOwnerEntity.getType())
+                )
             )
         );
         // Validate and clean listeners
@@ -245,7 +258,18 @@ public class ApiValidationServiceImpl extends AbstractService implements ApiVali
             )
         );
         // Validate and clean groups
-        apiEntity.setGroups(groupValidationService.validateAndSanitize(executionContext, null, apiEntity.getGroups(), primaryOwnerEntity));
+        apiEntity.setGroups(
+            groupValidationService.validateAndSanitize(
+                apiEntity.getGroups(),
+                executionContext.getEnvironmentId(),
+                new io.gravitee.apim.core.membership.model.PrimaryOwnerEntity(
+                    primaryOwnerEntity.getId(),
+                    primaryOwnerEntity.getEmail(),
+                    primaryOwnerEntity.getDisplayName(),
+                    io.gravitee.apim.core.membership.model.PrimaryOwnerEntity.Type.valueOf(primaryOwnerEntity.getType())
+                )
+            )
+        );
         // Validate and clean listeners
         apiEntity.setListeners(
             listenerValidationService.validateAndSanitize(executionContext, null, apiEntity.getListeners(), apiEntity.getEndpointGroups())

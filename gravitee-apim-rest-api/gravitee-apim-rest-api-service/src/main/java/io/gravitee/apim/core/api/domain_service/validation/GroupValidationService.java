@@ -15,26 +15,13 @@
  */
 package io.gravitee.apim.core.api.domain_service.validation;
 
-import static java.util.stream.Collectors.toSet;
-
 import io.gravitee.apim.core.DomainService;
-import io.gravitee.repository.management.model.GroupEvent;
-import io.gravitee.rest.api.model.GroupEntity;
-import io.gravitee.rest.api.model.MembershipEntity;
-import io.gravitee.rest.api.model.MembershipMemberType;
-import io.gravitee.rest.api.model.MembershipReferenceType;
-import io.gravitee.rest.api.model.PrimaryOwnerEntity;
-import io.gravitee.rest.api.model.settings.ApiPrimaryOwnerMode;
-import io.gravitee.rest.api.service.GroupService;
-import io.gravitee.rest.api.service.MembershipService;
-import io.gravitee.rest.api.service.common.ExecutionContext;
-import io.gravitee.rest.api.service.exceptions.GroupsNotFoundException;
+import io.gravitee.apim.core.group.model.Group;
+import io.gravitee.apim.core.group.query_service.GroupQueryService;
+import io.gravitee.apim.core.membership.model.PrimaryOwnerEntity;
 import io.gravitee.rest.api.service.exceptions.InvalidDataException;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
@@ -43,71 +30,32 @@ import org.apache.commons.lang3.StringUtils;
 @DomainService
 public class GroupValidationService {
 
-    private final GroupService groupService;
-    private final MembershipService membershipService;
+    private final GroupQueryService groupQueryService;
 
-    public GroupValidationService(final GroupService groupService, final MembershipService membershipService) {
-        this.groupService = groupService;
-        this.membershipService = membershipService;
+    public GroupValidationService(final GroupQueryService groupQueryService) {
+        this.groupQueryService = groupQueryService;
     }
 
-    public Set<String> validateAndSanitize(
-        final ExecutionContext executionContext,
-        final String apiId,
-        final Set<String> groups,
-        final PrimaryOwnerEntity primaryOwnerEntity
-    ) {
-        Set<String> sanitizedGroups = new HashSet<>();
-        if (groups != null && !groups.isEmpty()) {
-            try {
-                Set<GroupEntity> groundGroupEntities = groupService.findByIds(groups);
-                sanitizedGroups = removePrimaryOwnerGroups(executionContext, groundGroupEntities, apiId);
-            } catch (GroupsNotFoundException e) {
-                throw new InvalidDataException("These groups [" + e.getParameters().get("groups") + "] do not exist");
-            }
+    public Set<String> validateAndSanitize(final Set<String> groupIds, String environmentId, final PrimaryOwnerEntity primaryOwner) {
+        if (groupIds == null || groupIds.isEmpty()) {
+            return groupIds;
         }
 
-        // Add default group
-        Set<String> defaultGroups = groupService
-            .findByEvent(executionContext.getEnvironmentId(), GroupEvent.API_CREATE)
-            .stream()
-            .map(GroupEntity::getId)
-            .collect(toSet());
-        sanitizedGroups.addAll(defaultGroups);
-
-        // if primary owner is a group, add it as a member of the API
-        if (primaryOwnerEntity != null && ApiPrimaryOwnerMode.GROUP.name().equals(primaryOwnerEntity.getType())) {
-            sanitizedGroups.add(primaryOwnerEntity.getId());
+        var found = groupQueryService.findByIds(groupIds);
+        if (found.size() != groupIds.size()) {
+            var foundIds = found.stream().map(Group::getId).collect(Collectors.toSet());
+            var groupsNotFound = groupIds.stream().filter(groupId -> !foundIds.contains(groupId)).collect(Collectors.toSet());
+            throw new InvalidDataException("These groupIds [" + groupsNotFound + "] do not exist");
         }
 
-        return sanitizedGroups;
-    }
+        var defaultGroups = groupQueryService.findByEvent(environmentId, Group.GroupEvent.API_CREATE);
+        found.addAll(defaultGroups);
 
-    private Set<String> removePrimaryOwnerGroups(
-        final ExecutionContext executionContext,
-        final Set<GroupEntity> groundGroupEntities,
-        final String apiId
-    ) {
-        Stream<GroupEntity> groupEntityStream = groundGroupEntities.stream();
-        if (apiId != null) {
-            final MembershipEntity primaryOwner = membershipService.getPrimaryOwner(
-                executionContext.getOrganizationId(),
-                MembershipReferenceType.API,
-                apiId
-            );
-            if (primaryOwner.getMemberType() == MembershipMemberType.GROUP) {
-                // don't remove the primary owner group of this API.
-                groupEntityStream =
-                    groupEntityStream.filter(group ->
-                        StringUtils.isEmpty(group.getApiPrimaryOwner()) || group.getId().equals(primaryOwner.getMemberId())
-                    );
-            } else {
-                groupEntityStream = groupEntityStream.filter(group -> StringUtils.isEmpty(group.getApiPrimaryOwner()));
-            }
-        } else {
-            groupEntityStream = groupEntityStream.filter(group -> StringUtils.isEmpty(group.getApiPrimaryOwner()));
+        var sanitized = found.stream().filter(group -> group.getApiPrimaryOwner() == null).map(Group::getId).collect(Collectors.toSet());
+        if (primaryOwner != null && io.gravitee.apim.core.membership.model.PrimaryOwnerEntity.Type.GROUP.equals(primaryOwner.type())) {
+            sanitized.add(primaryOwner.id());
         }
 
-        return groupEntityStream.map(GroupEntity::getId).collect(Collectors.toSet());
+        return sanitized;
     }
 }

@@ -79,6 +79,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class ApiValidationServiceImplTest {
 
     private static final String ORGANIZATION_ID = "organization-id";
+    private static final String ENVIRONMENT_ID = "environment-id";
+
+    private static final PrimaryOwnerEntity PRIMARY_OWNER = new PrimaryOwnerEntity("id", "john.doe@gravitee.io", "John Doe", "USER");
 
     @Mock
     private TagValidationService tagsValidationService;
@@ -134,6 +137,7 @@ public class ApiValidationServiceImplTest {
             );
 
         GraviteeContext.setCurrentOrganization(ORGANIZATION_ID);
+        GraviteeContext.setCurrentEnvironment(ENVIRONMENT_ID);
     }
 
     @After
@@ -143,13 +147,12 @@ public class ApiValidationServiceImplTest {
 
     @Test
     public void shouldCallOtherServicesWhenValidatingNewApiEntity() {
-        PrimaryOwnerEntity primaryOwnerEntity = new PrimaryOwnerEntity();
         NewApiEntity newApiEntity = new NewApiEntity();
         newApiEntity.setType(ApiType.PROXY);
-        apiValidationService.validateAndSanitizeNewApi(GraviteeContext.getExecutionContext(), newApiEntity, primaryOwnerEntity);
+        apiValidationService.validateAndSanitizeNewApi(GraviteeContext.getExecutionContext(), newApiEntity, PRIMARY_OWNER);
 
         verify(tagsValidationService, times(1)).validateAndSanitize(eq(null), eq(null), any(), eq(ORGANIZATION_ID));
-        verify(groupValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null, primaryOwnerEntity);
+        verify(groupValidationService, times(1)).validateAndSanitize(eq(null), eq(ENVIRONMENT_ID), any());
         verify(listenerValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null, null);
         verify(endpointGroupsValidationService, times(1)).validateAndSanitize(newApiEntity.getType(), null);
         verify(loggingValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), newApiEntity.getType(), null);
@@ -166,12 +169,12 @@ public class ApiValidationServiceImplTest {
         apiEntity.setDefinitionVersion(DefinitionVersion.V4);
         apiEntity.setType(ApiType.PROXY);
         apiEntity.setLifecycleState(CREATED);
-        apiValidationService.validateAndSanitizeImportApiForCreation(GraviteeContext.getExecutionContext(), apiEntity, primaryOwnerEntity);
+        apiValidationService.validateAndSanitizeImportApiForCreation(GraviteeContext.getExecutionContext(), apiEntity, PRIMARY_OWNER);
 
         assertNull(apiEntity.getLifecycleState());
 
         verify(tagsValidationService, times(1)).validateAndSanitize(eq(null), eq(Set.of()), any(), eq(ORGANIZATION_ID));
-        verify(groupValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null, primaryOwnerEntity);
+        verify(groupValidationService, times(1)).validateAndSanitize(eq(null), eq(ENVIRONMENT_ID), any());
         verify(listenerValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), null, null, null);
         verify(endpointGroupsValidationService, times(1)).validateAndSanitize(apiEntity.getType(), null);
         verify(loggingValidationService, times(1)).validateAndSanitize(GraviteeContext.getExecutionContext(), apiEntity.getType(), null);
@@ -273,7 +276,7 @@ public class ApiValidationServiceImplTest {
         apiValidationService.validateAndSanitizeUpdateApi(
             GraviteeContext.getExecutionContext(),
             updateApiEntity,
-            new PrimaryOwnerEntity(),
+            PRIMARY_OWNER,
             existingApiEntity
         );
         assertEquals(CREATED, updateApiEntity.getLifecycleState());
@@ -384,7 +387,7 @@ public class ApiValidationServiceImplTest {
         apiValidationService.validateAndSanitizeUpdateApi(
             GraviteeContext.getExecutionContext(),
             updateApiEntity,
-            new PrimaryOwnerEntity(),
+            PRIMARY_OWNER,
             existingApiEntity
         );
         assertEquals("\"A Description\"", updateApiEntity.getDescription());
@@ -399,7 +402,7 @@ public class ApiValidationServiceImplTest {
         apiEntity.setLifecycleState(CREATED);
         apiEntity.setDescription("\"A<img src=\\\"../../../image.png\\\"> Description\"");
 
-        apiValidationService.validateAndSanitizeImportApiForCreation(GraviteeContext.getExecutionContext(), apiEntity, primaryOwnerEntity);
+        apiValidationService.validateAndSanitizeImportApiForCreation(GraviteeContext.getExecutionContext(), apiEntity, PRIMARY_OWNER);
 
         assertEquals("\"A Description\"", apiEntity.getDescription());
     }
@@ -411,7 +414,7 @@ public class ApiValidationServiceImplTest {
         newApiEntity.setType(ApiType.PROXY);
         newApiEntity.setDescription("\"A<img src=\\\"../../../image.png\\\"> Description\"");
 
-        apiValidationService.validateAndSanitizeNewApi(GraviteeContext.getExecutionContext(), newApiEntity, primaryOwnerEntity);
+        apiValidationService.validateAndSanitizeNewApi(GraviteeContext.getExecutionContext(), newApiEntity, PRIMARY_OWNER);
 
         assertEquals("\"A Description\"", newApiEntity.getDescription());
     }
@@ -435,7 +438,7 @@ public class ApiValidationServiceImplTest {
             apiValidationService.validateAndSanitizeUpdateApi(
                 GraviteeContext.getExecutionContext(),
                 updateApiEntity,
-                new PrimaryOwnerEntity(),
+                PRIMARY_OWNER,
                 existingApiEntity
             );
         } catch (final LifecycleStateChangeNotAllowedException ise) {
