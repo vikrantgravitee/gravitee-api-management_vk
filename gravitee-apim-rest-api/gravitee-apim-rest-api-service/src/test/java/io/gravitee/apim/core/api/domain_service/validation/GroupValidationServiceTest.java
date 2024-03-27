@@ -19,8 +19,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.mockito.Mockito.when;
 
-import io.gravitee.apim.core.api.domain_service.validation.GroupValidationService;
-import io.gravitee.apim.core.api.domain_service.validation.GroupValidationServiceImpl;
 import io.gravitee.repository.management.model.GroupEvent;
 import io.gravitee.rest.api.model.GroupEntity;
 import io.gravitee.rest.api.model.MembershipEntity;
@@ -47,7 +45,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @author GraviteeSource Team
  */
 @RunWith(MockitoJUnitRunner.class)
-public class GroupValidationServiceImplTest {
+public class GroupValidationServiceTest {
 
     public static final String PO_MAIL = "primary-owner@mail.fr";
 
@@ -61,7 +59,7 @@ public class GroupValidationServiceImplTest {
 
     @Before
     public void setUp() throws Exception {
-        groupValidationService = new GroupValidationServiceImpl(groupService, membershipService);
+        groupValidationService = new GroupValidationService(groupService, membershipService);
     }
 
     @Test
