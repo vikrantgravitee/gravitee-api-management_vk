@@ -16,8 +16,10 @@
 package io.gravitee.gateway.reactive.v4.policy;
 
 import io.gravitee.definition.model.v4.flow.Flow;
+import io.gravitee.definition.model.v4.flow.step.Step;
 import io.gravitee.gateway.reactive.api.ExecutionPhase;
 import io.gravitee.gateway.reactive.policy.PolicyChain;
+import java.util.List;
 
 /**
  * Allows creating {@link PolicyChain}.
@@ -43,4 +45,9 @@ public interface PolicyChainFactory {
      * @return the created {@link PolicyChain}.
      */
     PolicyChain create(String flowChainId, Flow flow, ExecutionPhase phase);
+
+    /**
+     * Create a policy chain from an EnvironmentFlow (a List<Step> for the POC)
+     */
+    PolicyChain create(String compositePolicyId, List<Step> steps, ExecutionPhase phase);
 }

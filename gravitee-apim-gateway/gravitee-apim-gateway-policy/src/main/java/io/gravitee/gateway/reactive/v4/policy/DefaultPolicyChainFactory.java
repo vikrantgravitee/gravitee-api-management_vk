@@ -26,6 +26,7 @@ import io.gravitee.gateway.reactive.api.hook.Hook;
 import io.gravitee.gateway.reactive.api.policy.Policy;
 import io.gravitee.gateway.reactive.policy.PolicyChain;
 import io.gravitee.gateway.reactive.policy.PolicyManager;
+import io.gravitee.gateway.reactive.policy.composite.CompositePolicy;
 import io.gravitee.gateway.reactive.policy.tracing.TracingPolicyHook;
 import io.gravitee.node.api.cache.Cache;
 import io.gravitee.node.api.cache.CacheConfiguration;
@@ -36,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * {@link PolicyChainFactory} that can be instantiated per-api or per-organization, and optimized to maximize the reuse of created {@link PolicyChain} thanks to a cache.
@@ -86,15 +86,53 @@ public class DefaultPolicyChainFactory implements PolicyChainFactory {
             final List<Policy> policies = steps
                 .stream()
                 .filter(Step::isEnabled)
-                .map(this::buildPolicyMetadata)
-                .map(policyMetadata -> policyManager.create(phase, policyMetadata))
+                .map(step -> {
+                    final PolicyMetadata policyMetadata = buildPolicyMetadata(step);
+                    // create a policy chain matching the environment flow
+                    if (CompositePolicy.POLICY_ID.equals(step.getPolicy())) {
+                        final Policy createdPolicy = policyManager.create(phase, policyMetadata);
+
+                        final CompositePolicy composite = (CompositePolicy) createdPolicy;
+                        final PolicyChain compositeChain = create(
+                            policyMetadata.getName(),
+                            composite.policyConfiguration.getSteps(),
+                            phase
+                        );
+                        composite.setPolicyChain(compositeChain);
+                        return composite;
+                    }
+                    return policyManager.create(phase, policyMetadata);
+                })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
 
             String policyChainId = getFlowId(flowChainId, flow);
             policyChain = new PolicyChain(policyChainId, policies, phase);
             policyChain.addHooks(policyHooks);
             policyChains.put(key, policyChain);
+        }
+
+        return policyChain;
+    }
+
+    @Override
+    public PolicyChain create(final String compositePolicyId, List<Step> steps, ExecutionPhase phase) {
+        final String policyChainId = "composite-" + compositePolicyId;
+        // In the future, rely on the EnvironmentFlowManager to cache the environment flows'  policyChain created here
+        PolicyChain policyChain = policyChains.get(policyChainId);
+
+        if (policyChain == null) {
+            final List<Policy> policies = steps
+                .stream()
+                .filter(Step::isEnabled)
+                .map(this::buildPolicyMetadata)
+                .map(policyMetadata -> policyManager.create(phase, policyMetadata))
+                .filter(Objects::nonNull)
+                .toList();
+
+            policyChain = new PolicyChain(policyChainId, policies, phase);
+            policyChain.addHooks(policyHooks);
+            policyChains.put(policyChainId, policyChain);
         }
 
         return policyChain;
