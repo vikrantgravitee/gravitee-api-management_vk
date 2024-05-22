@@ -69,7 +69,12 @@ class DefaultPolicyFactoryTest {
 
     @BeforeEach
     void init() {
-        cut = new DefaultPolicyFactory(policyPluginFactory, new ExpressionLanguageConditionFilter<>());
+        cut =
+            new DefaultPolicyFactory(
+                policyPluginFactory,
+                new ExpressionLanguageConditionFilter<>(),
+                new ExpressionLanguageConditionFilter<>()
+            );
         policyConfiguration = new DummyPolicyConfiguration();
         ((DummyPolicyConfiguration) policyConfiguration).setValue(1);
         policyMetadata = new PolicyMetadata("dummy-reactive", "{\"value\": 1}");

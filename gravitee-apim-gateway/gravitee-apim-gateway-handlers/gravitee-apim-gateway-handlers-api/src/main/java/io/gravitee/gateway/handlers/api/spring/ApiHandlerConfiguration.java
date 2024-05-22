@@ -120,7 +120,11 @@ public class ApiHandlerConfiguration {
 
     @Bean
     public PolicyFactory policyFactory(final PolicyPluginFactory policyPluginFactory) {
-        return new DefaultPolicyFactory(policyPluginFactory, new ExpressionLanguageConditionFilter<>());
+        return new DefaultPolicyFactory(
+            policyPluginFactory,
+            new ExpressionLanguageConditionFilter<>(),
+            new ExpressionLanguageConditionFilter<>()
+        );
     }
 
     @Bean

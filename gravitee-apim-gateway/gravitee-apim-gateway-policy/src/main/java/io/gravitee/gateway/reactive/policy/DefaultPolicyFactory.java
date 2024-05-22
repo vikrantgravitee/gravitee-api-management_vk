@@ -23,6 +23,8 @@ import io.gravitee.gateway.reactive.api.ExecutionPhase;
 import io.gravitee.gateway.reactive.api.policy.Policy;
 import io.gravitee.gateway.reactive.core.condition.ExpressionLanguageConditionFilter;
 import io.gravitee.gateway.reactive.policy.adapter.policy.PolicyAdapter;
+import io.gravitee.gateway.reactive.policy.composite.CompositePolicy;
+import io.gravitee.gateway.reactive.policy.composite.CompositePolicyConfiguration;
 import io.gravitee.policy.api.PolicyConfiguration;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,15 +40,19 @@ public class DefaultPolicyFactory implements PolicyFactory {
     private final PolicyPluginFactory policyPluginFactory;
     private final io.gravitee.gateway.policy.PolicyFactory v3PolicyFactory;
     protected final ExpressionLanguageConditionFilter<ConditionalPolicy> filter;
+    // FIXME: dupplication as a quick fix to handle condition ofr Composite policy
+    protected final ExpressionLanguageConditionFilter<CompositePolicy> compositePolicyFilter;
 
     public DefaultPolicyFactory(
         final PolicyPluginFactory policyPluginFactory,
-        final ExpressionLanguageConditionFilter<ConditionalPolicy> filter
+        final ExpressionLanguageConditionFilter<ConditionalPolicy> filter,
+        ExpressionLanguageConditionFilter<CompositePolicy> compositePolicyFilter
     ) {
         this.policyPluginFactory = policyPluginFactory;
         this.filter = filter;
         // V3 policy factory doesn't need condition evaluator anymore as condition is directly handled by v4 engine.
         this.v3PolicyFactory = new io.gravitee.gateway.policy.impl.PolicyFactoryImpl(policyPluginFactory);
+        this.compositePolicyFilter = compositePolicyFilter;
     }
 
     @Override
@@ -76,7 +82,10 @@ public class DefaultPolicyFactory implements PolicyFactory {
     ) {
         Policy policy = null;
 
-        if (Policy.class.isAssignableFrom(policyManifest.policy())) {
+        if (CompositePolicy.POLICY_ID.equals(policyManifest.id())) {
+            // Handling case of a composite policy
+            return createCompositePolicy(policyMetadata, (CompositePolicyConfiguration) policyConfiguration);
+        } else if (Policy.class.isAssignableFrom(policyManifest.policy())) {
             policy = (Policy) policyPluginFactory.create(policyManifest.policy(), policyConfiguration);
         } else if (phase == ExecutionPhase.REQUEST || phase == ExecutionPhase.RESPONSE) {
             StreamType streamType = phase == ExecutionPhase.REQUEST ? StreamType.ON_REQUEST : StreamType.ON_RESPONSE;
@@ -98,6 +107,12 @@ public class DefaultPolicyFactory implements PolicyFactory {
         policy = createConditionalPolicy(policyMetadata, policy);
 
         return policy;
+    }
+
+    protected Policy createCompositePolicy(PolicyMetadata policyMetadata, CompositePolicyConfiguration policyConfiguration) {
+
+        // Create a new CompositePolicy which will execute a PolicyChain instead of the implementation of a Regular policy
+        return new CompositePolicy(policyMetadata.getName(), policyMetadata.getCondition(), compositePolicyFilter, policyConfiguration);
     }
 
     protected Policy createConditionalPolicy(PolicyMetadata policyMetadata, Policy policy) {
