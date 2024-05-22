@@ -23,8 +23,11 @@ import io.gravitee.gateway.policy.PolicyConfigurationFactory;
 import io.gravitee.gateway.policy.PolicyManifest;
 import io.gravitee.gateway.policy.PolicyMetadata;
 import io.gravitee.gateway.policy.impl.PolicyLoader;
+import io.gravitee.gateway.policy.impl.PolicyManifestBuilder;
 import io.gravitee.gateway.reactive.api.ExecutionPhase;
 import io.gravitee.gateway.reactive.api.policy.Policy;
+import io.gravitee.gateway.reactive.policy.composite.CompositePolicy;
+import io.gravitee.gateway.reactive.policy.composite.CompositePolicyConfiguration;
 import io.gravitee.plugin.core.api.ConfigurablePluginManager;
 import io.gravitee.plugin.policy.PolicyClassLoaderFactory;
 import io.gravitee.plugin.policy.PolicyPlugin;
@@ -32,6 +35,7 @@ import io.gravitee.policy.api.PolicyConfiguration;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author Guillaume LAMIRAND (guillaume.lamirand at graviteesource.com)
@@ -61,7 +65,12 @@ public abstract class AbstractPolicyManager extends AbstractLifecycleComponent<P
     @Override
     protected void doStart() throws Exception {
         // Load policies
-        manifests.putAll(policyLoader.load(dependencies()));
+        // Filter composite policies because they are not built as a regular plugin
+        manifests.putAll(
+            policyLoader.load(
+                dependencies().stream().filter(p -> !CompositePolicy.POLICY_ID.equals(p.getName())).collect(Collectors.toSet())
+            )
+        );
 
         // Activate policy context
         policyLoader.activatePolicyContext(manifests);
@@ -81,7 +90,24 @@ public abstract class AbstractPolicyManager extends AbstractLifecycleComponent<P
 
     @Override
     public Policy create(final ExecutionPhase executionPhase, final PolicyMetadata policyMetadata) {
+        if (CompositePolicy.POLICY_ID.equals(policyMetadata.getName())) {
+            final PolicyManifestBuilder policyManifestBuilder = new PolicyManifestBuilder();
+            final PolicyManifest manifest = policyManifestBuilder
+                .setId(CompositePolicy.POLICY_ID)
+                .setPolicy(CompositePolicy.class)
+                .setConfiguration(CompositePolicyConfiguration.class)
+                .setClassLoader(this.getClass().getClassLoader())
+                .build();
+            PolicyConfiguration policyConfiguration = policyConfigurationFactory.create(
+                manifest.configuration(),
+                policyMetadata.getConfiguration()
+            );
+            return policyFactory.create(executionPhase, manifest, policyConfiguration, policyMetadata);
+        }
+
         PolicyManifest manifest = manifests.get(policyMetadata.getName());
+        // manifests map is built thanks to Api.dependencies() because for the POC, the composite policy holds the list of policies to instantiate as configuration
+        // In the future, we will also have to get the PolicyManifest from EnvironmentFlowPolicyManager, if not present in the map coming from Api.dependencies() and Api contains a composite policy
         if (manifest != null) {
             PolicyConfiguration policyConfiguration = policyConfigurationFactory.create(
                 manifest.configuration(),

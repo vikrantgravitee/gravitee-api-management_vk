@@ -15,6 +15,8 @@
  */
 package io.gravitee.gateway.reactive.handlers.api.v4;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gravitee.definition.model.DefinitionVersion;
 import io.gravitee.definition.model.Policy;
 import io.gravitee.definition.model.v4.flow.Flow;
@@ -22,7 +24,10 @@ import io.gravitee.definition.model.v4.flow.step.Step;
 import io.gravitee.definition.model.v4.plan.Plan;
 import io.gravitee.definition.model.v4.plan.PlanSecurity;
 import io.gravitee.definition.model.v4.resource.Resource;
+import io.gravitee.gateway.reactive.policy.composite.CompositePolicy;
+import io.gravitee.gateway.reactive.policy.composite.CompositePolicyConfiguration;
 import io.gravitee.gateway.reactor.ReactableApi;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -140,15 +145,29 @@ public class Api extends ReactableApi<io.gravitee.definition.model.v4.Api> {
         if (flowStep == null || flowStep.isEmpty()) {
             return List.of();
         }
+
         return flowStep
             .stream()
             .filter(Step::isEnabled)
             .map(step -> {
+                if (CompositePolicy.POLICY_ID.equals(step.getPolicy())) {
+                    try {
+                        // we need to extract configuration here to be able to extract policies to load in PolicyManager
+                        // For the POC, list of step is configured inside the composite policy configuration, so we need to extract it to load the policies in the ApiPolicyManager
+                        // In the future, we should have an EnvironmentFlowPolicyManager to read the Shared flow and instantiate and cache the policies.
+                        return getPolicies(
+                            new ObjectMapper().readValue(step.getConfiguration(), CompositePolicyConfiguration.class).getSteps()
+                        );
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 Policy policy = new Policy();
                 policy.setName(step.getPolicy());
                 policy.setConfiguration(step.getConfiguration());
-                return policy;
+                return List.of(policy);
             })
+            .flatMap(Collection::stream)
             .collect(Collectors.toList());
     }
 }
