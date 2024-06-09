@@ -309,15 +309,11 @@
 ./plugins/gravitee-policy-oauth2-3.0.4/lib,nimbus-jose-jwt,'9.15.2,648K
 ./plugins/gravitee-policy-oauth2-3.0.4,gravitee-policy-oauth2,'3.0.4,28K
 ./plugins/gravitee-policy-apikey-4.0.1,gravitee-policy-apikey,'4.0.1,12K
-./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,javax.activation-api,'1.2.0,56K
 ./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,opencsv,'5.7.1,236K
 ./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,liquibase-slf4j,'4.0.0,4.0K
-./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,jaxb-api,'2.4.0,128K
 ./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,HikariCP,'5.0.0,160K
 ./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,commons-text,'1.12.0,248K
-./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,spring-tx,'6.1.6,280K
 ./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,spring-jdbc,'6.1.6,460K
-./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,commons-lang3,'3.14.0,644K
 ./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT/lib,liquibase-core,'4.21.1,2.6M
 ./plugins/gravitee-apim-repository-jdbc-4.5.0-SNAPSHOT,gravitee-apim-repository-jdbc,'4.5.0-SNAPSHOT,420K
 ./plugins/gravitee-resource-oauth2-provider-generic-2.0.2,gravitee-resource-oauth2-provider-generic,'2.0.2,24K
