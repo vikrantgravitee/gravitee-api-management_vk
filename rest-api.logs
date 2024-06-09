@@ -266,10 +266,8 @@
 ./plugins/gravitee-policy-rest-to-soap-1.14.1,gravitee-policy-rest-to-soap,'1.14.1,12K
 ./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT,gravitee-apim-rest-api-idp-ldap,'4.5.0-SNAPSHOT,28K
 ./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT/lib,spring-security-crypto,'6.2.4,84K
-./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT/lib,micrometer-observation,'1.12.5,72K
 ./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT/lib,spring-security-ldap,'6.2.4,116K
 ./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT/lib,spring-ldap-core,'3.2.3,396K
-./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT/lib,micrometer-commons,'1.12.5,48K
 ./plugins/gravitee-policy-data-logging-masking-3.1.0/lib,accessors-smart,'2.4.9,32K
 ./plugins/gravitee-policy-data-logging-masking-3.1.0/lib,json-smart,'2.4.10,120K
 ./plugins/gravitee-policy-data-logging-masking-3.1.0/lib,json-path,'2.8.0,272K
