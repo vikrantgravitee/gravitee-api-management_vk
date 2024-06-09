@@ -195,11 +195,7 @@
 ./plugins/gravitee-policy-json-to-json-3.0.1/lib,json-utils,'0.1.8,16K
 ./plugins/gravitee-fetcher-bitbucket-2.0.1,gravitee-fetcher-bitbucket,'2.0.1,12K
 ./plugins/gravitee-apim-plugin-apiservice-servicediscovery-consul-4.5.0-SNAPSHOT,gravitee-apim-plugin-apiservice-servicediscovery-consul,'4.5.0-SNAPSHOT,28K
-./plugins/gravitee-apim-plugin-apiservice-servicediscovery-consul-4.5.0-SNAPSHOT/lib,vertx-web-common,'4.5.7,24K
 ./plugins/gravitee-apim-plugin-apiservice-servicediscovery-consul-4.5.0-SNAPSHOT/lib,vertx-consul-client,'4.5.7,204K
-./plugins/gravitee-apim-plugin-apiservice-servicediscovery-consul-4.5.0-SNAPSHOT/lib,vertx-auth-common,'4.5.7,132K
-./plugins/gravitee-apim-plugin-apiservice-servicediscovery-consul-4.5.0-SNAPSHOT/lib,vertx-web-client,'4.5.7,116K
-./plugins/gravitee-apim-plugin-apiservice-servicediscovery-consul-4.5.0-SNAPSHOT/lib,vertx-uri-template,'4.5.7,36K
 ./plugins/gravitee-node-cache-plugin-standalone-5.19.0,gravitee-node-cache-plugin-standalone,'5.19.0,8.0K
 ./plugins/gravitee-endpoint-azure-service-bus-0.1.0,gravitee-endpoint-azure-service-bus,'0.1.0,88K
 ./plugins/gravitee-endpoint-azure-service-bus-0.1.0/lib,azure-json,'1.0.1,416K
