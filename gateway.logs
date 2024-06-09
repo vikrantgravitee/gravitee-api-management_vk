@@ -366,24 +366,12 @@
 ./plugins/gravitee-policy-http-signature-1.7.0,gravitee-policy-http-signature,'1.7.0,60K
 ./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT,gravitee-apim-repository-mongodb,'4.5.0-SNAPSHOT,680K
 ./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,mongodb-driver-core,'5.1.1,1.6M
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-expression,'6.1.6,296K
 ./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,mongodb-driver-reactivestreams,'5.1.1,180K
 ./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-data-mongodb,'4.3.1,2.3M
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,micrometer-observation,'1.12.5,72K
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-beans,'6.1.6,840K
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-core,'6.1.6,1.8M
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-jcl,'6.1.6,24K
 ./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-data-commons,'3.3.1,1.4M
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-context,'6.1.6,1.2M
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-aop,'6.1.6,408K
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,reactor-core,'3.6.7,1.8M
 ./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,bson-record-codec,'5.1.1,12K
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,reactive-streams,'1.0.4,12K
 ./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,bson,'5.1.1,496K
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,spring-tx,'6.1.6,280K
 ./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,mongodb-driver-sync,'5.1.1,152K
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,micrometer-commons,'1.12.5,48K
-./plugins/gravitee-apim-repository-mongodb-4.5.0-SNAPSHOT/lib,commons-lang3,'3.14.0,644K
 ./plugins/gravitee-policy-override-http-method-2.2.1,gravitee-policy-override-http-method,'2.2.1,8.0K
 ./plugins/gravitee-policy-oauth2-3.0.4/lib,nimbus-jose-jwt,'9.15.2,648K
 ./plugins/gravitee-policy-oauth2-3.0.4,gravitee-policy-oauth2,'3.0.4,28K
@@ -565,6 +553,7 @@
 ./lib/ext,micrometer-observation,'1.12.5,72K
 ./lib/ext,vertx-rx-java3-gen,'4.5.7,68K
 ./lib/ext,freemarker,'2.3.33,1.8M
+./lib/ext,javax.activation-api,'1.2.0,56K
 ./lib/ext,spring-beans,'6.1.6,840K
 ./lib/ext,jakarta.inject-api,'2.0.1,12K
 ./lib/ext,vertx-rx-gen,'4.5.7,28K
@@ -618,6 +607,7 @@
 ./lib/ext,jackson-dataformat-xml,'2.17.0,128K
 ./lib/ext,netty-common,'4.1.108,648K
 ./lib/ext,jakarta.annotation-api,'3.0.0,28K
+./lib/ext,jaxb-api,'2.4.0,128K
 ./lib/ext,netty-codec-http,'4.1.108,656K
 ./lib/ext,guava,'33.2.1,2.9M
 ./lib/ext,jaxb-impl,'4.0.5,904K
@@ -636,6 +626,7 @@
 ./lib/ext,checker-qual,'3.42.0,228K
 ./lib/ext,javassist,'3.30.2,780K
 ./lib/ext,jakarta.xml.bind-api,'4.0.2,128K
+./lib/ext,spring-tx,'6.1.6,280K
 ./lib/ext,jsr305,'3.0.2,20K
 ./lib/ext,netty-codec-dns,'4.1.108,68K
 ./lib/ext,jaxb-core,'4.0.5,232K
@@ -646,6 +637,7 @@
 ./lib/ext,vertx-core,'4.5.7,1.6M
 ./lib/ext,jcl-over-slf4j,'2.0.13,20K
 ./lib/ext,micrometer-commons,'1.12.5,48K
+./lib/ext,commons-lang3,'3.14.0,644K
 ./lib,gravitee-apim-plugin-reactor-handler,'4.5.0-SNAPSHOT,12K
 ./lib,gravitee-node-container,'5.19.0,36K
 ./lib,gravitee-node-monitoring,'5.19.0,64K
