@@ -265,7 +265,6 @@
 ./plugins/gravitee-policy-ssl-enforcement-1.5.0,gravitee-policy-ssl-enforcement,'1.5.0,16K
 ./plugins/gravitee-policy-rest-to-soap-1.14.1,gravitee-policy-rest-to-soap,'1.14.1,12K
 ./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT,gravitee-apim-rest-api-idp-ldap,'4.5.0-SNAPSHOT,28K
-./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT/lib,spring-security-crypto,'6.2.4,84K
 ./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT/lib,spring-security-ldap,'6.2.4,116K
 ./plugins/gravitee-apim-rest-api-idp-ldap-4.5.0-SNAPSHOT/lib,spring-ldap-core,'3.2.3,396K
 ./plugins/gravitee-policy-data-logging-masking-3.1.0/lib,accessors-smart,'2.4.9,32K
