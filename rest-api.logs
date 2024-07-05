@@ -33,12 +33,6 @@
 ./plugins/gravitee-policy-callout-http-3.0.0,gravitee-policy-callout-http,'3.0.0,32K
 ./plugins/gravitee-node-cluster-plugin-standalone-5.19.0,gravitee-node-cluster-plugin-standalone,'5.19.0,12K
 ./plugins/gravitee-apim-plugin-apiservice-dynamicproperties-http-4.5.0-SNAPSHOT,gravitee-apim-plugin-apiservice-dynamicproperties-http,'4.5.0-SNAPSHOT,24K
-./plugins/gravitee-apim-plugin-apiservice-dynamicproperties-http-4.5.0-SNAPSHOT/lib,jolt-core,'0.1.8,212K
-./plugins/gravitee-apim-plugin-apiservice-dynamicproperties-http-4.5.0-SNAPSHOT/lib,json-utils,'0.1.8,16K
-./plugins/gravitee-apim-plugin-apiservice-dynamicproperties-http-4.5.0-SNAPSHOT/lib,jackson-core,'2.17.0,568K
-./plugins/gravitee-apim-plugin-apiservice-dynamicproperties-http-4.5.0-SNAPSHOT/lib,jackson-annotations,'2.17.0,80K
-./plugins/gravitee-apim-plugin-apiservice-dynamicproperties-http-4.5.0-SNAPSHOT/lib,jackson-databind,'2.17.0,1.6M
-./plugins/gravitee-apim-plugin-apiservice-dynamicproperties-http-4.5.0-SNAPSHOT/lib,byte-buddy,'1.14.9,4.0M
 ./plugins/gravitee-entrypoint-websocket-1.0.4,gravitee-entrypoint-websocket,'1.0.4,100K
 ./plugins/gravitee-policy-transform-avro-json-2.0.2,gravitee-policy-transform-avro-json,'2.0.2,40K
 ./plugins/gravitee-policy-transform-avro-json-2.0.2/lib,jackson-core,'2.15.2,540K
@@ -209,8 +203,6 @@
 ./plugins/gravitee-policy-ipfiltering-1.14.0/lib,commons-beanutils,'1.9.4,244K
 ./plugins/gravitee-policy-ipfiltering-1.14.0,gravitee-policy-ipfiltering,'1.14.0,16K
 ./plugins/gravitee-apim-rest-api-services-dynamic-properties-4.5.0-SNAPSHOT,gravitee-apim-rest-api-services-dynamic-properties,'4.5.0-SNAPSHOT,28K
-./plugins/gravitee-apim-rest-api-services-dynamic-properties-4.5.0-SNAPSHOT/lib,jolt-core,'0.1.8,212K
-./plugins/gravitee-apim-rest-api-services-dynamic-properties-4.5.0-SNAPSHOT/lib,json-utils,'0.1.8,16K
 ./plugins/gravitee-policy-interops-a-idp-1.0.0,gravitee-policy-interops-a-idp,'1.0.0,28K
 ./plugins/gravitee-policy-interops-a-idp-1.0.0/lib,gravitee-policy-interops-common,'1.0.0,24K
 ./plugins/gravitee-apim-plugin-endpoint-mock-4.5.0-SNAPSHOT,gravitee-apim-plugin-endpoint-mock,'4.5.0-SNAPSHOT,100K
@@ -259,8 +251,6 @@
 ./plugins/gravitee-service-discovery-consul-1.3.0/lib,vertx-web-common,'4.1.0,24K
 ./plugins/gravitee-service-discovery-consul-1.3.0/lib,vertx-auth-common,'4.1.0,128K
 ./plugins/gravitee-service-discovery-consul-1.3.0/lib,vertx-web-client,'4.1.0,64K
-./plugins/gravitee-apim-rest-api-services-dictionary-4.5.0-SNAPSHOT/lib,jolt-core,'0.1.8,212K
-./plugins/gravitee-apim-rest-api-services-dictionary-4.5.0-SNAPSHOT/lib,json-utils,'0.1.8,16K
 ./plugins/gravitee-apim-rest-api-services-dictionary-4.5.0-SNAPSHOT,gravitee-apim-rest-api-services-dictionary,'4.5.0-SNAPSHOT,28K
 ./plugins/gravitee-policy-aws-lambda-1.2.0,gravitee-policy-aws-lambda,'1.2.0,28K
 ./plugins/gravitee-policy-aws-lambda-1.2.0/lib,aws-java-sdk-lambda,'1.12.748,1.1M
@@ -580,9 +570,11 @@
 ./lib/ext,swagger-parser-safe-url-resolver,'1.0.70,12K
 ./lib/ext,netty-handler,'4.1.100,552K
 ./lib/ext,netty-codec-http2,'4.1.108,480K
+./lib/ext,jolt-core,'0.1.8,212K
 ./lib/ext,httpcore,'4.4.16,324K
 ./lib/ext,jersey-container-servlet,'3.1.5,36K
 ./lib/ext,angus-mail,'2.0.3,488K
+./lib/ext,json-utils,'0.1.8,16K
 ./lib/ext,caffeine,'3.1.8,872K
 ./lib/ext,flexmark-util-visitor,'0.64.8,8.0K
 ./lib/ext,reflections,'0.9.11,128K

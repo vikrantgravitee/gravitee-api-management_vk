@@ -130,6 +130,7 @@
         <json-path.version>2.9.0</json-path.version>
         <json-smart.version>2.5.1</json-smart.version>
         <jsoup.version>1.17.2</jsoup.version>
+        <jolt.version>0.1.8</jolt.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <lucene.version>9.11.1</lucene.version>
         <mapstruct.version>1.6.0.Beta2</mapstruct.version>
@@ -1050,6 +1051,22 @@
                 <groupId>com.graviteesource.cloud</groupId>
                 <artifactId>gravitee-cloud-initializer</artifactId>
                 <version>${gravitee-cloud-initializer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bazaarvoice.jolt</groupId>
+                <artifactId>jolt-core</artifactId>
+                <version>${jolt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bazaarvoice.jolt</groupId>
+                <artifactId>json-utils</artifactId>
+                <version>${jolt.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
