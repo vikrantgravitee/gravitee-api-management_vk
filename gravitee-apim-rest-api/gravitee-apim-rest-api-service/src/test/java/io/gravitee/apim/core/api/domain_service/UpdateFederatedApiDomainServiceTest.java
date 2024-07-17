@@ -63,6 +63,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class UpdateFederatedApiDomainServiceTest {
@@ -182,9 +183,11 @@ class UpdateFederatedApiDomainServiceTest {
         //when
         var updatedApi = usecase.update(apiToUpdate, auditInfo, ownerEntity);
         //then
+        assertThat(apiCrudService.storage()).extracting("federatedApiDefinition").doesNotContainNull();
         SoftAssertions.assertSoftly(soft -> {
             assertThat(updatedApi.getName()).isEqualTo("updated-name");
             assertThat(updatedApi.getDescription()).isEqualTo("updated-description");
+            assertThat(updatedApi.getFederatedApiDefinition()).isNotNull();
             assertThat(updatedApi.getVersion()).isEqualTo("2.0.0");
             assertThat(updatedApi.getLabels()).containsExactly("label-1");
             assertThat(updatedApi.getCategories()).containsExactly("key-1");
@@ -349,6 +352,49 @@ class UpdateFederatedApiDomainServiceTest {
                     Collections.emptySet()
                 )
             );
+    }
+
+    @Test
+    @DisplayName(
+        "In some case (specially when we come from UpdateApiFederated) we don't have federationApiDefinition, so we keep the previous"
+    )
+    public void dont_erase_federated_defenition() {
+        //given
+        apiCrudService.initWith(List.of(ApiFixtures.aFederatedApi()));
+        var auditInfo = AuditInfoFixtures.anAuditInfo(ORGANIZATION_ID, ENVIRONMENT_ID, USER_ID);
+        String categoryKey = "categoryKey-1";
+        var apiToUpdate = ApiFixtures
+            .aFederatedApi()
+            .toBuilder()
+            .name("updated-name")
+            .description("updated-description")
+            .version("2.0.0")
+            .labels(List.of("label-1"))
+            .categories(Set.of(categoryKey))
+            .apiLifecycleState(Api.ApiLifecycleState.PUBLISHED)
+            .federatedApiDefinition(null) // when the API come from UpdateApiFederated we don't have the
+            .build();
+
+        CategoryEntity categoryEntity = new CategoryEntity();
+        String categoryId = "categoryId-1";
+        categoryEntity.setId(categoryId);
+        when(categoryDomainService.toCategoryId(any(), any())).thenReturn(Set.of(categoryId));
+        when(categoryDomainService.toCategoryKey(any(), any())).thenReturn(Set.of("key-1"));
+        var ownerEntity = buildPrimaryOwnerEntity();
+
+        //when
+        var updatedApi = usecase.update(apiToUpdate, auditInfo, ownerEntity);
+        //then
+        assertThat(apiCrudService.storage()).extracting("federatedApiDefinition").doesNotContainNull();
+        SoftAssertions.assertSoftly(soft -> {
+            assertThat(updatedApi.getName()).isEqualTo("updated-name");
+            assertThat(updatedApi.getDescription()).isEqualTo("updated-description");
+            assertThat(updatedApi.getFederatedApiDefinition()).isNotNull();
+            assertThat(updatedApi.getVersion()).isEqualTo("2.0.0");
+            assertThat(updatedApi.getLabels()).containsExactly("label-1");
+            assertThat(updatedApi.getCategories()).containsExactly("key-1");
+            assertThat(updatedApi.getApiLifecycleState()).isEqualTo(Api.ApiLifecycleState.PUBLISHED);
+        });
     }
 
     PrimaryOwnerEntity buildPrimaryOwnerEntity() {

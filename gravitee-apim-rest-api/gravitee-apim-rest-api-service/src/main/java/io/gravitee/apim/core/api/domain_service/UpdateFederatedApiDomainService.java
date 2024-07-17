@@ -53,7 +53,12 @@ public class UpdateFederatedApiDomainService {
                 .visibility(preparedApi.getVisibility())
                 .groups(preparedApi.getGroups())
                 .labels(preparedApi.getLabels())
-                .federatedApiDefinition(preparedApi.getFederatedApiDefinition())
+                // in some case we don't have
+                .federatedApiDefinition(
+                    preparedApi.getFederatedApiDefinition() != null
+                        ? preparedApi.getFederatedApiDefinition()
+                        : currentApi.getFederatedApiDefinition()
+                )
                 .categories(categoryDomainService.toCategoryId(preparedApi, currentApi.getEnvironmentId()))
                 .updatedAt(TimeProvider.now())
                 .build();
