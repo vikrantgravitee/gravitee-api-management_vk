@@ -26,6 +26,7 @@ import io.gravitee.apim.core.membership.model.PrimaryOwnerEntity;
 import io.gravitee.apim.core.search.Indexer;
 import io.gravitee.common.utils.TimeProvider;
 import java.util.Collections;
+import java.util.function.UnaryOperator;
 import lombok.AllArgsConstructor;
 
 @DomainService
@@ -38,30 +39,14 @@ public class UpdateFederatedApiDomainService {
     private final CategoryDomainService categoryDomainService;
     private final ApiIndexerDomainService apiIndexerDomainService;
 
-    public Api update(Api federatedApi, AuditInfo auditInfo, PrimaryOwnerEntity primaryOwnerEntity) {
-        var currentApi = apiCrudService.get(federatedApi.getId());
+    public Api update(String apiId, UnaryOperator<Api> updater, AuditInfo auditInfo, PrimaryOwnerEntity primaryOwnerEntity) {
+        var currentApi = apiCrudService.get(apiId);
+
+        Api federatedApi = updater.apply(currentApi);
 
         var preparedApi = validateFederatedApiDomainService.validateAndSanitizeForUpdate(federatedApi, currentApi, primaryOwnerEntity);
 
-        preparedApi =
-            currentApi
-                .toBuilder()
-                .name(preparedApi.getName())
-                .description(preparedApi.getDescription())
-                .version(preparedApi.getVersion())
-                .apiLifecycleState(preparedApi.getApiLifecycleState())
-                .visibility(preparedApi.getVisibility())
-                .groups(preparedApi.getGroups())
-                .labels(preparedApi.getLabels())
-                // in some case we don't have
-                .federatedApiDefinition(
-                    preparedApi.getFederatedApiDefinition() != null
-                        ? preparedApi.getFederatedApiDefinition()
-                        : currentApi.getFederatedApiDefinition()
-                )
-                .categories(categoryDomainService.toCategoryId(preparedApi, currentApi.getEnvironmentId()))
-                .updatedAt(TimeProvider.now())
-                .build();
+        preparedApi.setUpdatedAt(TimeProvider.now());
 
         createAuditLog(auditInfo, preparedApi, currentApi);
         createIndex(auditInfo, preparedApi, primaryOwnerEntity);
@@ -69,8 +54,6 @@ public class UpdateFederatedApiDomainService {
         Api updated = apiCrudService.update(preparedApi);
 
         categoryDomainService.updateOrderCategoriesOfApi(updated.getId(), updated.getCategories());
-
-        updated.setCategories(categoryDomainService.toCategoryKey(updated, updated.getEnvironmentId()));
 
         return updated;
     }

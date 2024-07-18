@@ -16,6 +16,7 @@
 package io.gravitee.apim.core.api.use_case;
 
 import io.gravitee.apim.core.UseCase;
+import io.gravitee.apim.core.api.domain_service.CategoryDomainService;
 import io.gravitee.apim.core.api.domain_service.UpdateFederatedApiDomainService;
 import io.gravitee.apim.core.api.model.Api;
 import io.gravitee.apim.core.audit.model.AuditInfo;
@@ -23,6 +24,7 @@ import io.gravitee.apim.core.membership.domain_service.ApiPrimaryOwnerDomainServ
 import io.gravitee.apim.core.membership.model.PrimaryOwnerEntity;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import java.util.function.UnaryOperator;
 
 @UseCase
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class UpdateFederatedApiUseCase {
 
     private final ApiPrimaryOwnerDomainService apiPrimaryOwnerDomainService;
     private final UpdateFederatedApiDomainService apiUpdateFederatedApiDomainService;
+    private final CategoryDomainService categoryDomainService;
 
     public Output execute(Input input) {
         var updateApi = input.apiToUpdate;
@@ -40,7 +43,21 @@ public class UpdateFederatedApiUseCase {
             updateApi.getId()
         );
 
-        var updated = apiUpdateFederatedApiDomainService.update(input.apiToUpdate, auditInfo, primaryOwnerEntity);
+        UnaryOperator<Api> upd = currentApi ->
+                currentApi
+                        .toBuilder()
+                        .name(input.apiToUpdate.getName())
+                        .description(input.apiToUpdate.getDescription())
+                        .version(input.apiToUpdate.getVersion())
+                        .apiLifecycleState(input.apiToUpdate.getApiLifecycleState())
+                        .visibility(input.apiToUpdate.getVisibility())
+                        .labels(input.apiToUpdate.getLabels())
+                        .categories(categoryDomainService.toCategoryId(input.apiToUpdate, currentApi.getEnvironmentId()))
+                        .build();
+
+        var updated = apiUpdateFederatedApiDomainService.update(input.apiToUpdate.getId(), upd, auditInfo, primaryOwnerEntity);
+
+        updated.setCategories(categoryDomainService.toCategoryKey(updated, updated.getEnvironmentId()));
 
         return new Output(updated, primaryOwnerEntity);
     }

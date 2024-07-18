@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -144,17 +145,15 @@ public class IngestIntegrationApisUseCase {
              */
             var existingApiName = existingApi.getName();
 
-            updateFederatedApiDomainService.update(
-                existingApi
-                    .toBuilder()
-                    .name(federatedApi.getName())
-                    .description(federatedApi.getDescription())
-                    .version(federatedApi.getVersion())
-                    .federatedApiDefinition(federatedApi.getFederatedApiDefinition())
-                    .build(),
-                auditInfo,
-                primaryOwner
-            );
+            UnaryOperator<Api> updater = previousApi ->
+                    previousApi
+                            .toBuilder()
+                            .name(federatedApi.getName())
+                            .description(federatedApi.getDescription())
+                            .version(federatedApi.getVersion())
+                            .federatedApiDefinition(federatedApi.getFederatedApiDefinition())
+                            .build();
+            updateFederatedApiDomainService.update(federatedApi.getId(), updater, auditInfo, primaryOwner);
 
             ofNullable(integrationApi.plans())
                 .stream()
