@@ -89,6 +89,10 @@ export class PortalBannerComponent implements OnInit {
       secondaryButtonEnabled: new FormControl<boolean>(false),
       secondaryButtonLink: new FormControl<string[]>([]),
     });
+    this.disableComponents();
+  }
+
+  private disableComponents() {
     this.form.controls.primaryButtonText.disable();
     this.form.controls.primaryButtonEnabled.disable();
     this.form.controls.primaryButtonLink.disable();
