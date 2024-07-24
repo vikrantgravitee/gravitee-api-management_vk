@@ -24,7 +24,7 @@
   <mat-card-content>
     <form *ngIf="form" [formGroup]="form">
       <mat-radio-group
-        class="status__radio-group"
+        class="gio-selection-list"
         aria-label="Select a status"
         formControlName="bannerType"
       >
@@ -87,8 +87,8 @@
             <mat-form-field class="button">
               <mat-label>Page Redirection</mat-label>
               <mat-select formControlName="primaryButtonRedirection" >
-                @for (pageRedirection of pageRedirections; track pageRedirection.id) {
-                  <mat-option [value]="pageRedirection.id">{{ pageRedirection.name }}</mat-option>
+                @for (link of pageLinks; track link.id) {
+                  <mat-option [value]="link.id">{{ link.name }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -118,8 +118,8 @@
             <mat-form-field class="button">
               <mat-label>Page Redirection</mat-label>
               <mat-select formControlName="secondaryButtonRedirection" >
-                @for (pageRedirection of pageRedirections; track pageRedirection.id) {
-                  <mat-option [value]="pageRedirection.id">{{ pageRedirection.name }}</mat-option>
+                @for (link of pageLinks; track link.id) {
+                  <mat-option [value]="link.id">{{ link.name }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>

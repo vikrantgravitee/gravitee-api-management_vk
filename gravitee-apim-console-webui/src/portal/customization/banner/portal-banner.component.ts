@@ -42,7 +42,7 @@ interface BannerForm {
   secondaryButtonRedirection: FormControl<string[]>;
 }
 
-export interface PageRedirection {
+export interface PageLink {
   id?: string;
   name?: string;
 }
@@ -73,12 +73,12 @@ export interface PageRedirection {
 export class PortalBannerComponent implements OnInit {
   form: FormGroup<BannerForm>;
   bannerTypes = Object.values(BannerEnum);
-  pageRedirections: PageRedirection[] = [
+  pageLinks: PageLink[] = [
     {name: 'Catalog', id: '1'},
   ];
 
   ngOnInit(): void {
-    console.log('pageRedirections size: ' + this.pageRedirections.length);
+    console.log('pageRedirections size: ' + this.pageLinks.length);
     this.form = new FormGroup<BannerForm>({
       bannerType: new FormControl<BannerType>(BannerEnum.NONE, [Validators.required]),
       titleText: new FormControl<string>('', [Validators.required]),
