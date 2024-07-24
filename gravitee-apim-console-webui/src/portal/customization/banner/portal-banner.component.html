@@ -15,21 +15,118 @@
     limitations under the License.
 
 -->
+<portal-header title="Theme" subtitle="Customize the look and feel of the new Developer Portal." />
 <mat-card class="developer-portal-banner">
   <mat-card-header>
-    <mat-card-title>Hello developer-portal-banner !</mat-card-title>
-    <mat-card-subtitle>Add a description here</mat-card-subtitle>
+    <mat-card-title>Choose feature banner</mat-card-title>
   </mat-card-header>
+
   <mat-card-content>
-    @if (developerPortalBannerForm) {
-      <form [formGroup]="developerPortalBannerForm">
-        <mat-form-field>
-          <mat-label>Name</mat-label>
-          <input matInput formControlName="name" required />
-          <mat-error *ngIf="developerPortalBannerForm.controls.name.hasError('required')">Name is required.</mat-error>
-        </mat-form-field>
-      </form>
-    }
+    <form *ngIf="form" [formGroup]="form">
+      <mat-radio-group
+        class="status__radio-group"
+        aria-label="Select a status"
+        formControlName="bannerType"
+      >
+        @for (bannerType of bannerTypes; track bannerType) {
+          <mat-radio-button class="status__radio-group__button" [value]="bannerType">
+            {{ bannerType }}
+          </mat-radio-button>
+        }
+      </mat-radio-group>
+      <img class="card__header__logo" src="/assets/banner-none.svg" alt="Gravitee.io" />
+
+      @if (form.controls.bannerType.value === 'Featured banner') {
+        <div>
+          <div class="header-row">
+            <h3 class="header__title">Information</h3>
+          </div>
+          <div>
+            <mat-form-field class="input_text">
+              <mat-label>Title Text</mat-label>
+              <input type="text" maxlength="150" matInput aria-label="Logging configuration condition" formControlName="titleText"/>
+              <mat-error *ngIf="form.controls.titleText?.errors?.required">Title is required</mat-error>
+            </mat-form-field>
+          </div>
+          <div>
+            <mat-form-field class="input_text">
+              <mat-label>Subtitle Text</mat-label>
+              <input
+                type="text"
+                #input
+                maxlength="250"
+                matInput
+                aria-label="Logging configuration condition"
+                formControlName="subTitleText"
+              />
+              <mat-hint>{{ input.value.length }}/250</mat-hint>
+              <mat-error *ngIf="form.controls.subTitleText?.errors?.required">Subtitle is required</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <div>
+          <div class="header-row">
+            <h3 class="header__title">Primary button</h3>
+            <gio-form-slide-toggle>
+              <gio-form-label>Display in the banner</gio-form-label>
+              <mat-slide-toggle
+                gioFormSlideToggle
+                formControlName="primaryButtonEnabled"
+                aria-label="Display in the banner"
+                name="primaryButtonEnabled"
+              ></mat-slide-toggle>
+            </gio-form-slide-toggle>
+          </div>
+          <div class="button-row">
+            <mat-form-field class="button">
+              <mat-label>Button Text</mat-label>
+              <input type="text" matInput aria-label="Logging configuration condition"
+                     formControlName="primaryButtonText"/>
+              <mat-error *ngIf="form.controls.primaryButtonText?.errors?.required">Button text is required</mat-error>
+            </mat-form-field>
+            <mat-form-field class="button">
+              <mat-label>Page Redirection</mat-label>
+              <mat-select formControlName="primaryButtonRedirection" >
+                @for (pageRedirection of pageRedirections; track pageRedirection.id) {
+                  <mat-option [value]="pageRedirection.id">{{ pageRedirection.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div>
+          <div class="header-row">
+            <h3 class="header__title">Secondary button</h3>
+            <gio-form-slide-toggle>
+              <gio-form-label>Display in the banner</gio-form-label>
+              <mat-slide-toggle
+                gioFormSlideToggle
+                formControlName="secondaryButtonEnabled"
+                aria-label="Display in the banner"
+                name="secondaryButtonEnabled"
+              ></mat-slide-toggle>
+            </gio-form-slide-toggle>
+          </div>
+          <div class="button-row">
+            <mat-form-field class="button">
+              <mat-label>Secondary Text</mat-label>
+              <input type="text" matInput aria-label="Logging configuration condition"
+                     formControlName="secondaryButtonText"/>
+              <mat-error *ngIf="form.controls.secondaryButtonText?.errors?.required">Secondary text is required
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field class="button">
+              <mat-label>Page Redirection</mat-label>
+              <mat-select formControlName="secondaryButtonRedirection" >
+                @for (pageRedirection of pageRedirections; track pageRedirection.id) {
+                  <mat-option [value]="pageRedirection.id">{{ pageRedirection.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      }
+    </form>
   </mat-card-content>
 </mat-card>
-<gio-save-bar [form]="developerPortalBannerForm" (resetClicked)="reset()" (submitted)="submit()"></gio-save-bar>
+<gio-save-bar [form]="form" (resetClicked)="reset()" (submitted)="submit()"></gio-save-bar>

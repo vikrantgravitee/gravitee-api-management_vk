@@ -18,6 +18,7 @@ package io.gravitee.rest.api.model.settings;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.gravitee.rest.api.model.annotations.ParameterKey;
 import io.gravitee.rest.api.model.parameters.Key;
+import io.gravitee.rest.api.model.settings.portalNext.Banner;
 import lombok.Data;
 
 /**
@@ -40,4 +41,7 @@ public class PortalNext {
 
     @ParameterKey(Key.PORTAL_NEXT_ACCESS_ENABLED)
     private Enabled access;
+
+    @ParameterKey(Key.PORTAL_NEXT_BANNER)
+    private Banner banner;
 }
