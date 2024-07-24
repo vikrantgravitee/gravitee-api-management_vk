@@ -23,7 +23,6 @@ import {GioFormSlideToggleModule, GioSaveBarModule} from '@gravitee/ui-particles
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { of } from 'rxjs';
 
-import { BannerType, BannerEnum } from '../../../entities/management-api-v2/documentation/bannerType';
 import { GioRoleModule } from '../../../shared/components/gio-role/gio-role.module';
 import {MatOption} from "@angular/material/autocomplete";
 import {MatSelect} from "@angular/material/select";
@@ -36,10 +35,10 @@ interface BannerForm {
   subTitleText: FormControl<string>;
   primaryButtonText: FormControl<string>;
   primaryButtonEnabled: FormControl<boolean>;
-  primaryButtonRedirection: FormControl<string[]>;
+  primaryButtonLink: FormControl<string[]>;
   secondaryButtonText: FormControl<string>;
   secondaryButtonEnabled: FormControl<boolean>;
-  secondaryButtonRedirection: FormControl<string[]>;
+  secondaryButtonLink: FormControl<string[]>;
 }
 
 export interface PageLink {
@@ -72,9 +71,9 @@ export interface PageLink {
 })
 export class PortalBannerComponent implements OnInit {
   form: FormGroup<BannerForm>;
-  bannerTypes: 'None' | 'Featured banner' = 'None';
+  bannerTypes: string[] = ['None', 'Featured banner'];
   pageLinks: PageLink[] = [
-    {name: 'Catalog', id: '1'},
+    {id: '1', name: 'Catalog'},
   ];
 
   ngOnInit(): void {
@@ -84,18 +83,18 @@ export class PortalBannerComponent implements OnInit {
       titleText: new FormControl<string>('', [Validators.required]),
       subTitleText: new FormControl<string>('', [Validators.required]),
       primaryButtonText: new FormControl<string>('Explore APIs', [Validators.required]),
-      primaryButtonRedirection: new FormControl<string[]>([]),
+      primaryButtonLink: new FormControl<string[]>([]),
       primaryButtonEnabled: new FormControl<boolean>(false),
       secondaryButtonText: new FormControl<string>('Explore APIs', [Validators.required]),
       secondaryButtonEnabled: new FormControl<boolean>(false),
-      secondaryButtonRedirection: new FormControl<string[]>([]),
+      secondaryButtonLink: new FormControl<string[]>([]),
     });
     this.form.controls.primaryButtonText.disable();
     this.form.controls.primaryButtonEnabled.disable();
-    this.form.controls.primaryButtonRedirection.disable();
+    this.form.controls.primaryButtonLink.disable();
     this.form.controls.secondaryButtonText.disable();
     this.form.controls.secondaryButtonEnabled.disable();
-    this.form.controls.secondaryButtonRedirection.disable();
+    this.form.controls.secondaryButtonLink.disable();
   }
 
   reset() {

@@ -28,12 +28,11 @@
         aria-label="Select a status"
         formControlName="enabled"
       >
-        <mat-radio-button class="status__radio-group__button" [value]="false">
-          None
-        </mat-radio-button>
-        <mat-radio-button class="status__radio-group__button" [value]="true">
-          Featured banner
-        </mat-radio-button>
+        @for (bannerType of bannerTypes; track $index) {
+          <mat-radio-button class="status__radio-group__button" [value]="bannerType === 'Featured banner'">
+            {{ bannerType }}
+          </mat-radio-button>
+        }
       </mat-radio-group>
 
       @if(form.controls.enabled.value) {
@@ -87,7 +86,7 @@
             </mat-form-field>
             <mat-form-field class="button">
               <mat-label>Page Redirection</mat-label>
-              <mat-select formControlName="primaryButtonRedirection" >
+              <mat-select formControlName="primaryButtonLink" >
                 @for (link of pageLinks; track link.id) {
                   <mat-option [value]="link.id">{{ link.name }}</mat-option>
                 }
@@ -118,7 +117,7 @@
             </mat-form-field>
             <mat-form-field class="button">
               <mat-label>Page Redirection</mat-label>
-              <mat-select formControlName="secondaryButtonRedirection" >
+              <mat-select formControlName="secondaryButtonLink" >
                 @for (link of pageLinks; track link.id) {
                   <mat-option [value]="link.id">{{ link.name }}</mat-option>
                 }
