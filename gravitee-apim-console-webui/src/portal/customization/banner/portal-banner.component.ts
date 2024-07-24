@@ -31,7 +31,7 @@ import {MatSlideToggle} from "@angular/material/slide-toggle";
 import {PortalHeaderComponent} from "../../components/header/portal-header.component";
 
 interface BannerForm {
-  bannerType: FormControl<BannerType>;
+  enabled: FormControl<boolean>;
   titleText: FormControl<string>;
   subTitleText: FormControl<string>;
   primaryButtonText: FormControl<string>;
@@ -72,7 +72,7 @@ export interface PageLink {
 })
 export class PortalBannerComponent implements OnInit {
   form: FormGroup<BannerForm>;
-  bannerTypes = Object.values(BannerEnum);
+  bannerTypes: 'None' | 'Featured banner' = 'None';
   pageLinks: PageLink[] = [
     {name: 'Catalog', id: '1'},
   ];
@@ -80,7 +80,7 @@ export class PortalBannerComponent implements OnInit {
   ngOnInit(): void {
     console.log('pageRedirections size: ' + this.pageLinks.length);
     this.form = new FormGroup<BannerForm>({
-      bannerType: new FormControl<BannerType>(BannerEnum.NONE, [Validators.required]),
+      enabled: new FormControl<boolean>(false, [Validators.required]),
       titleText: new FormControl<string>('', [Validators.required]),
       subTitleText: new FormControl<string>('', [Validators.required]),
       primaryButtonText: new FormControl<string>('Explore APIs', [Validators.required]),
@@ -100,7 +100,7 @@ export class PortalBannerComponent implements OnInit {
 
   reset() {
     this.form.reset({
-      bannerType: BannerEnum.NONE,
+      enabled: false,
     });
   }
 

@@ -26,17 +26,18 @@
       <mat-radio-group
         class="gio-selection-list"
         aria-label="Select a status"
-        formControlName="bannerType"
+        formControlName="enabled"
       >
-        @for (bannerType of bannerTypes; track bannerType) {
-          <mat-radio-button class="status__radio-group__button" [value]="bannerType">
-            {{ bannerType }}
-          </mat-radio-button>
-        }
+        <mat-radio-button class="status__radio-group__button" [value]="false">
+          None
+        </mat-radio-button>
+        <mat-radio-button class="status__radio-group__button" [value]="true">
+          Featured banner
+        </mat-radio-button>
       </mat-radio-group>
-      <img class="card__header__logo" src="/assets/banner-none.svg" alt="Gravitee.io" />
 
-      @if (form.controls.bannerType.value === 'Featured banner') {
+      @if(form.controls.enabled.value) {
+        <img class="card__header__logo" src="/assets/banner-featured.svg" alt="Gravitee.io" />
         <div>
           <div class="header-row">
             <h3 class="header__title">Information</h3>
@@ -125,6 +126,8 @@
             </mat-form-field>
           </div>
         </div>
+      } @else {
+        <img class="card__header__logo" src="/assets/banner-none.svg" alt="Gravitee.io" />
       }
     </form>
   </mat-card-content>
