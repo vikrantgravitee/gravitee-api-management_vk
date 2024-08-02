@@ -18,11 +18,8 @@
 <div class="content__header">
   <div class="content__header__title">
     <h4>Upload a file</h4>
-    @if (!published) {
-      <span class="gio-badge-neutral">Unpublished</span>
-    } @else {
-      <span class="gio-badge-success">Published</span>
-    }
+    <span class="gio-badge-neutral" *ngIf="!published">Unpublished</span>
+    <span class="gio-badge-success" *ngIf="published">Published</span>
   </div>
 </div>
 <div class="content__file">
@@ -39,19 +36,11 @@
     </gio-form-file-picker-add-button>
   </gio-form-file-picker>
 </div>
-@if (!!importFileContent) {
+<div *ngIf="!!importFileContent">
   <h4>Preview of uploaded file</h4>
   <div class="content__preview">
-    @switch (pageType) {
-      @case ('MARKDOWN') {
-        <markdown [data]="importFileContent"></markdown>
-      }
-      @case ('SWAGGER') {
-        <gio-swagger-ui [spec]="importFileContent"></gio-swagger-ui>
-      }
-      @case ('ASYNCAPI') {
-        <gio-async-api [schema]="importFileContent"></gio-async-api>
-      }
-    }
+    <markdown *ngIf="pageType === 'MARKDOWN'" [data]="importFileContent"> </markdown>
+    <gio-swagger-ui *ngIf="pageType === 'SWAGGER'" [spec]="importFileContent"> </gio-swagger-ui>
+    <gio-async-api *ngIf="pageType === 'ASYNCAPI'" [schema]="importFileContent"></gio-async-api>
   </div>
-}
+</div>
