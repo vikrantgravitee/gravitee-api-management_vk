@@ -15,7 +15,7 @@
  */
 import { commands, Config, Job, reusable } from '@circleci/circleci-config-sdk';
 import { Command } from '@circleci/circleci-config-sdk/dist/src/lib/Components/Commands/exports/Command';
-import { NodeLtsExecutor } from '../../executors';
+import { NodeLtsExecutor, OpenJdkExecutor } from '../../executors';
 import { BuildUiImageCommand, InstallYarnCommand, NotifyOnFailureCommand, WebuiInstallCommand } from '../../commands';
 import { CircleCIEnvironment } from '../../pipelines';
 import { computeApimVersion } from '../../utils';
@@ -68,6 +68,6 @@ export class ConsoleWebuiBuildJob {
       }),
     ];
 
-    return new Job(ConsoleWebuiBuildJob.jobName, NodeLtsExecutor.create('large'), steps);
+    return new Job(ConsoleWebuiBuildJob.jobName, OpenJdkExecutor.create('large'), steps);
   }
 }
