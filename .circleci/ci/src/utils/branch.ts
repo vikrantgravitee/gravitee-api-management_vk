@@ -22,9 +22,9 @@ export function sanitizeBranch(branch: string) {
     .substring(0, 60);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function isE2EBranch(branch: string): boolean {
-  const regex = /.*-run-e2e.*/;
-  return regex.test(branch);
+  return true;
 }
 
 export function isMasterBranch(branch: string): boolean {
