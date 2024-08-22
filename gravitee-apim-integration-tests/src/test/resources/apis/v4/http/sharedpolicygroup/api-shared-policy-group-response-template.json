@@ -141,7 +141,7 @@
   "responseTemplates": {
     "FAKE_KEY": {
       "*/*": {
-        "status": 412,
+        "status": 404,
         "body": "A failing template with spg",
         "sharedPolicyGroup": "spg-two-headers-on-response"
       }

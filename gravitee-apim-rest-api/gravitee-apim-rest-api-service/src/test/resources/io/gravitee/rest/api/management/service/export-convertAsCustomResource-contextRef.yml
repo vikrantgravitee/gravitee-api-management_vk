@@ -79,6 +79,7 @@ spec:
       '*/*':
         status: 400
         body: "{\"bad\":\"news\"}"
+        sharedPolicyGroup: null
   contextRef:
     name: "apim-dev-ctx"
     namespace: "default"

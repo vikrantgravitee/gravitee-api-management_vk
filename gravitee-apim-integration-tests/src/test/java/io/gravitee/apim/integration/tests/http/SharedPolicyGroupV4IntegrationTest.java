@@ -126,7 +126,7 @@ class SharedPolicyGroupV4IntegrationTest {
                 .await()
                 .assertComplete()
                 .assertValue(response -> {
-                    assertThat(response.statusCode()).isEqualTo(412);
+                    assertThat(response.statusCode()).isEqualTo(404);
                     assertThat(extractHeaders(response))
                         .contains(
                             Map.entry("X-Response-Header-Outside-0", "Header Outside 0"),
