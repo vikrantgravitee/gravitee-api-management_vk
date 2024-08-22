@@ -191,6 +191,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.gravitee.apim.gateway.handlers</groupId>
+            <artifactId>gravitee-apim-gateway-handlers-shared-policy-group</artifactId>
+            <version>4.5.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

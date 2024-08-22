@@ -21,7 +21,11 @@ import io.gravitee.definition.model.ResponseTemplate;
 import io.gravitee.el.TemplateEngine;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.http.HttpHeaderNames;
+import io.gravitee.gateway.handlers.sharedpolicygroup.reactor.SharedPolicyGroupReactor;
+import io.gravitee.gateway.handlers.sharedpolicygroup.registry.SharedPolicyGroupRegistry;
 import io.gravitee.gateway.reactive.api.ExecutionFailure;
+import io.gravitee.gateway.reactive.api.context.ContextAttributes;
+import io.gravitee.gateway.reactive.api.context.ExecutionContext;
 import io.gravitee.gateway.reactive.api.context.HttpExecutionContext;
 import io.gravitee.gateway.reactive.handlers.api.processor.error.AbstractFailureProcessor;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -157,6 +161,8 @@ public class ResponseTemplateBasedFailureProcessor extends AbstractFailureProces
                 templateEngine.getTemplateContext().setVariable("parameters", executionFailure.parameters());
             }
 
+            final SharedPolicyGroupRegistry spgRegistry = context.getComponent(SharedPolicyGroupRegistry.class);
+
             // Apply templating
             return templateEngine
                 .eval(template.getBody(), String.class)
@@ -165,6 +171,15 @@ public class ResponseTemplateBasedFailureProcessor extends AbstractFailureProces
                     Buffer payload = Buffer.buffer(body);
                     context.response().headers().set(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(payload.length()));
                     context.response().body(payload);
+                    if (template.getSharedPolicyGroup() != null) {
+                        final SharedPolicyGroupReactor sharedPolicyGroupReactor = spgRegistry.get(
+                            template.getSharedPolicyGroup(),
+                            context.getAttribute(ContextAttributes.ATTR_ENVIRONMENT)
+                        );
+                        return sharedPolicyGroupReactor != null
+                            ? sharedPolicyGroupReactor.policyChain().execute((ExecutionContext) context)
+                            : Completable.complete();
+                    }
                     return Completable.complete();
                 });
         }
