@@ -36,6 +36,7 @@ import io.gravitee.apim.gateway.tests.sdk.connector.EntrypointBuilder;
 import io.gravitee.apim.gateway.tests.sdk.policy.PolicyBuilder;
 import io.gravitee.apim.gateway.tests.sdk.resource.ResourceBuilder;
 import io.gravitee.apim.integration.tests.fake.DummyCacheResource;
+import io.gravitee.apim.integration.tests.fake.InterruptResponsePhasePolicy;
 import io.gravitee.apim.integration.tests.fake.ThrowingPolicy;
 import io.gravitee.definition.model.v4.flow.step.Step;
 import io.gravitee.definition.model.v4.sharedpolicygroup.SharedPolicyGroup;
@@ -102,6 +103,44 @@ class SharedPolicyGroupV4IntegrationTest {
         @Override
         public void configurePlaceHolderVariables(Map<String, String> variables) {
             variables.put("SHARED_POLICY_GROUP_ID", "spg-nested");
+        }
+
+        @Override
+        public void configurePolicies(Map<String, PolicyPlugin> policies) {
+            super.configurePolicies(policies);
+            policies.putIfAbsent(
+                "interrupt-response-phase",
+                PolicyBuilder.build("interrupt-response-phase", InterruptResponsePhasePolicy.class)
+            );
+        }
+
+        @Test
+        @DeployApi({ "/apis/v4/http/sharedpolicygroup/api-shared-policy-group-response-template.json" })
+        void should_use_shared_policy_group_on_response_template(HttpClient httpClient) throws InterruptedException {
+            wiremock.stubFor(get("/endpoint").willReturn(ok("response from backend")));
+
+            httpClient
+                .rxRequest(HttpMethod.GET, "/test")
+                .flatMap(HttpClientRequest::rxSend)
+                .test()
+                .await()
+                .assertComplete()
+                .assertValue(response -> {
+                    assertThat(response.statusCode()).isEqualTo(412);
+                    assertThat(extractHeaders(response))
+                        .contains(
+                            Map.entry("X-Response-Header-Outside-0", "Header Outside 0"),
+                            Map.entry("X-Response-Header-Inside-0", "Header Inside 0"),
+                            Map.entry("X-Response-Header-Inside-1", "Header Inside 1")
+                        );
+                    return true;
+                })
+                .assertNoErrors();
+
+            wiremock.verify(
+                1,
+                getRequestedFor(urlPathEqualTo("/endpoint")).withHeader("X-Request-Header-Outside-0", equalTo("Header Outside 0"))
+            );
         }
 
         @Test
