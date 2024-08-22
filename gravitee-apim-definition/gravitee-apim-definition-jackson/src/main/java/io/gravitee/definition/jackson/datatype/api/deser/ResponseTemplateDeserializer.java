@@ -43,6 +43,7 @@ public class ResponseTemplateDeserializer extends StdScalarDeserializer<Response
 
         template.setStatusCode(node.path("status").asInt());
         template.setBody(node.path("body").asText());
+        template.setSharedPolicyGroup(node.path("sharedPolicyGroup").asText());
 
         JsonNode headersNode = node.get("headers");
         if (headersNode != null && !headersNode.isEmpty(null)) {
