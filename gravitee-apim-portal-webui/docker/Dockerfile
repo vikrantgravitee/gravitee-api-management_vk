@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM graviteeio/nginx-noconfd:1.25.1
+FROM node:20-alpine as production
 LABEL maintainer="contact@graviteesource.com"
 
 EXPOSE 8080
@@ -35,5 +35,4 @@ COPY docker/config/portal-next-run.sh /portal-next-run.sh
 
 CMD ["/bin/sh", "-c", "sh /portal-next-run.sh; sh /run.sh"]
 
-USER nginx
-
+#USER nginx
