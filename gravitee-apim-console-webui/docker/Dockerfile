@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-FROM node:20-alpine as production
+FROM graviteeio/nginx-noconfd:1.25.1
 LABEL maintainer="contact@graviteesource.com"
 
 ENV CONSOLE_BASE_HREF "/"
@@ -27,6 +27,7 @@ ADD docker/config/default.conf /etc/nginx/conf.d/default.conf
 
 RUN chown -R 101:0 /usr/share/nginx/ /etc/nginx/
 
-#CMD ["sh", "/run.sh"]
+CMD ["sh", "/run.sh"]
 
-#USER nginx
+USER nginx
+
