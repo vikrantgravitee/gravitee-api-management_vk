@@ -56,16 +56,6 @@ gateway-docker-context`,
     // to move in support branch or master
     dynamicConfig.importOrb(orbs.keeper).importOrb(orbs.aquasec);
     steps.push(
-      new commands.Run({
-        name: 'Build Docker images locally',
-        command: `docker buildx build --platform=linux/amd64 -f gravitee-apim-rest-api/docker/Dockerfile \\
--t graviteeio.azurecr.io/apim-management-api:${tag} \\
---output type=docker rest-api-docker-context
-
-docker buildx build --platform=linux/amd64 -f gravitee-apim-gateway/docker/Dockerfile \\
--t graviteeio.azurecr.io/apim-gateway:${tag} \\
---output type=docker gateway-docker-context`,
-      }),
       new reusable.ReusedCommand(orbs.keeper.commands['env-export'], {
         'secret-url': config.secrets.aquaKey,
         'var-name': 'AQUA_KEY',

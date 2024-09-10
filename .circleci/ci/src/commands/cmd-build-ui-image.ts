@@ -59,13 +59,6 @@ export class BuildUiImageCommand {
     // to move in support branch or master
     dynamicConfig.importOrb(orbs.keeper).importOrb(orbs.aquasec);
     steps.push(
-      new commands.Run({
-        name: 'Build Docker images locally',
-        command: `docker buildx build --platform=linux/amd64 -f docker/Dockerfile \\
--t graviteeio.azurecr.io/<< parameters.docker-image-name >>:${tag} \\
---output type=docker .`,
-        working_directory: '<< parameters.apim-ui-project >>',
-      }),
       new reusable.ReusedCommand(orbs.keeper.commands['env-export'], {
         'secret-url': config.secrets.aquaKey,
         'var-name': 'AQUA_KEY',
