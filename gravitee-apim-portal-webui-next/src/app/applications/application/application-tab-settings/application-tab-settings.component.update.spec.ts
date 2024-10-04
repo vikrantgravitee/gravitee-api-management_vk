@@ -16,7 +16,7 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpClientModule } from '@angular/common/http';
-import { HttpTestingController } from '@angular/common/http/testing';
+import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -34,6 +34,10 @@ import {
 import { fakeUserApplicationPermissions } from '../../../../entities/permission/permission.fixtures';
 import { ConfigService } from '../../../../services/config.service';
 import { AppTestingModule, TESTING_BASE_URL } from '../../../../testing/app-testing.module';
+import {
+  ApplicationTabSettingsEditComponent
+} from "./application-tab-settings-edit/application-tab-settings-edit.component";
+import {Application} from "../../../../entities/application/application";
 
 describe('ApplicationTabSettingsComponent', () => {
   let component: ApplicationTabSettingsComponent;
@@ -41,10 +45,17 @@ describe('ApplicationTabSettingsComponent', () => {
   let httpTestingController: HttpTestingController;
   let loader: HarnessLoader;
   let updateHarness: ApplicationTabSettingsEditHarness;
+  const applicationId = 'id1';
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ApplicationTabSettingsComponent, DeleteConfirmDialogComponent, HttpClientModule, NoopAnimationsModule, AppTestingModule],
+      imports: [
+        ApplicationTabSettingsComponent,
+        DeleteConfirmDialogComponent,
+        HttpClientTestingModule,
+        NoopAnimationsModule,
+        AppTestingModule,
+      ],
       providers: [
         {
           provide: ConfigService,
@@ -62,17 +73,38 @@ describe('ApplicationTabSettingsComponent', () => {
     loader = TestbedHarnessEnvironment.loader(fixture);
 
     component = fixture.componentInstance;
+    component.applicationId = applicationId;
+    component.applicationTypeConfiguration = fakeSimpleApplicationType();
     component.userApplicationPermissions = fakeUserApplicationPermissions({
       DEFINITION: ['U'],
     });
   });
 
-  afterEach(() => {
-    httpTestingController.verify();
-  });
+  async function initRestCalls(simpleApplication: Application) {
+    fixture.detectChanges();
+
+    const applicationRequest = httpTestingController.expectOne(`${TESTING_BASE_URL}/applications/${applicationId}`);
+    expect(applicationRequest.request.method).toBe('GET');
+    applicationRequest.flush(simpleApplication);
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const applicationRequests = httpTestingController.match(`${TESTING_BASE_URL}/applications/${applicationId}`);
+    applicationRequests.forEach(req => {
+      expect(req.request.method).toBe('GET');
+      req.flush(simpleApplication);
+      fixture.detectChanges();
+    });
+
+    await fixture.whenStable();
+
+    updateHarness = await loader.getHarness(ApplicationTabSettingsEditHarness);
+  }
 
   describe('Display a simple application', () => {
     const simpleApplication = fakeApplication({
+      id: applicationId,
       name: 'Simple application',
       description: 'Simple description',
       picture: 'data:image/png;base64,xxxxxxxx',
@@ -86,10 +118,7 @@ describe('ApplicationTabSettingsComponent', () => {
     });
 
     beforeEach(async () => {
-      component.application = simpleApplication;
-      component.applicationTypeConfiguration = fakeSimpleApplicationType();
-      fixture.detectChanges();
-      updateHarness = await loader.getHarness(ApplicationTabSettingsEditHarness);
+      await initRestCalls(simpleApplication);
     });
 
     it('Should display name, description, picture, client ID & application type fields', async () => {
@@ -124,12 +153,11 @@ describe('ApplicationTabSettingsComponent', () => {
         settings: { app: { client_id: 'New custom client ID', type: '' } },
       };
 
-      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${component.application.id}`, method: 'PUT' });
+      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${applicationId}`, method: 'PUT' });
       expect(req.request.body).toEqual(updatedApplication);
       req.flush(updatedApplication);
     });
   });
-
   describe('Display Backend to backend application', () => {
     const b2bApplication = fakeApplication({
       name: 'B2b application',
@@ -150,10 +178,7 @@ describe('ApplicationTabSettingsComponent', () => {
     });
 
     beforeEach(async () => {
-      component.application = b2bApplication;
-      component.applicationTypeConfiguration = fakeBackendToBackendApplicationType();
-      fixture.detectChanges();
-      updateHarness = await loader.getHarness(ApplicationTabSettingsEditHarness);
+      await initRestCalls(b2bApplication);
     });
 
     it('Should display name, description, picture, client ID, client secret & grant types fields', async () => {
@@ -185,7 +210,7 @@ describe('ApplicationTabSettingsComponent', () => {
         description: 'New b2b description',
       };
 
-      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${component.application.id}`, method: 'PUT' });
+      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${applicationId}`, method: 'PUT' });
       expect(req.request.body).toEqual(updatedApplication);
       req.flush(updatedApplication);
     });
@@ -211,10 +236,7 @@ describe('ApplicationTabSettingsComponent', () => {
     });
 
     beforeEach(async () => {
-      component.application = nativeApplication;
-      component.applicationTypeConfiguration = fakeNativeApplicationType();
-      fixture.detectChanges();
-      updateHarness = await loader.getHarness(ApplicationTabSettingsEditHarness);
+      await initRestCalls(nativeApplication);
     });
 
     it('Should display name, description, picture, client ID, client secret, redirect URIs & grant types fields', async () => {
@@ -258,7 +280,7 @@ describe('ApplicationTabSettingsComponent', () => {
         },
       };
 
-      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${component.application.id}`, method: 'PUT' });
+      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${applicationId}`, method: 'PUT' });
       expect(req.request.body).toEqual(updatedApplication);
       req.flush(updatedApplication);
     });
@@ -284,10 +306,7 @@ describe('ApplicationTabSettingsComponent', () => {
     });
 
     beforeEach(async () => {
-      component.application = browserApplication;
-      component.applicationTypeConfiguration = fakeBrowserApplicationType();
-      fixture.detectChanges();
-      updateHarness = await loader.getHarness(ApplicationTabSettingsEditHarness);
+      await initRestCalls(browserApplication);
     });
 
     it('Should display name, description, picture, client ID, client secret, redirect URIs & grant types fields', async () => {
@@ -331,7 +350,7 @@ describe('ApplicationTabSettingsComponent', () => {
         },
       };
 
-      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${component.application.id}`, method: 'PUT' });
+      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${applicationId}`, method: 'PUT' });
       expect(req.request.body).toEqual(updatedApplication);
       req.flush(updatedApplication);
     });
@@ -357,10 +376,7 @@ describe('ApplicationTabSettingsComponent', () => {
     });
 
     beforeEach(async () => {
-      component.application = webApplication;
-      component.applicationTypeConfiguration = fakeWebApplicationType();
-      fixture.detectChanges();
-      updateHarness = await loader.getHarness(ApplicationTabSettingsEditHarness);
+      await initRestCalls(webApplication);
     });
 
     it('Should display name, description, picture, client ID, client secret, redirect URIs & grant types fields', async () => {
@@ -405,7 +421,7 @@ describe('ApplicationTabSettingsComponent', () => {
         },
       };
 
-      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${component.application.id}`, method: 'PUT' });
+      const req = httpTestingController.expectOne({ url: `${TESTING_BASE_URL}/applications/${applicationId}`, method: 'PUT' });
       expect(req.request.body).toEqual(updatedApplication);
       req.flush(updatedApplication);
     });
@@ -413,7 +429,7 @@ describe('ApplicationTabSettingsComponent', () => {
 
   describe('Other commands', () => {
     beforeEach(async () => {
-      component.application = fakeApplication({
+      const nativeApplication = fakeApplication({
         name: 'Native application',
         description: 'Native description',
         picture: 'data:image/png;base64,xxxxxxxx',
@@ -430,9 +446,8 @@ describe('ApplicationTabSettingsComponent', () => {
           app: undefined,
         },
       });
-      component.applicationTypeConfiguration = fakeNativeApplicationType();
-      fixture.detectChanges();
-      updateHarness = await loader.getHarness(ApplicationTabSettingsEditHarness);
+
+      await initRestCalls(nativeApplication);
     });
 
     it('Should be able to discard changes', async () => {
@@ -465,3 +480,5 @@ describe('ApplicationTabSettingsComponent', () => {
     });
   });
 });
+
+
