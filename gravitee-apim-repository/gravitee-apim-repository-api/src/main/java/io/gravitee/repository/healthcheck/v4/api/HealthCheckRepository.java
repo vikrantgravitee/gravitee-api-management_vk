@@ -16,10 +16,19 @@
 package io.gravitee.repository.healthcheck.v4.api;
 
 import io.gravitee.repository.common.query.QueryContext;
+import io.gravitee.repository.healthcheck.v4.model.ApiFieldPeriod;
+import io.gravitee.repository.healthcheck.v4.model.AvailabilityResponse;
 import io.gravitee.repository.healthcheck.v4.model.AverageHealthCheckResponseTime;
-import io.gravitee.repository.healthcheck.v4.model.AverageHealthCheckResponseTimeQuery;
-import java.util.Optional;
+import io.gravitee.repository.healthcheck.v4.model.AverageHealthCheckResponseTimeOvertime;
+import io.gravitee.repository.healthcheck.v4.model.AverageHealthCheckResponseTimeOvertimeQuery;
+import io.reactivex.rxjava3.core.Maybe;
 
 public interface HealthCheckRepository {
-    Optional<AverageHealthCheckResponseTime> averageResponseTime(QueryContext queryContext, AverageHealthCheckResponseTimeQuery query);
+    Maybe<AverageHealthCheckResponseTime> averageResponseTime(QueryContext queryContext, ApiFieldPeriod query);
+    Maybe<AvailabilityResponse> availability(QueryContext queryContext, ApiFieldPeriod query);
+
+    Maybe<AverageHealthCheckResponseTimeOvertime> averageResponseTimeOvertime(
+        QueryContext queryContext,
+        AverageHealthCheckResponseTimeOvertimeQuery query
+    );
 }

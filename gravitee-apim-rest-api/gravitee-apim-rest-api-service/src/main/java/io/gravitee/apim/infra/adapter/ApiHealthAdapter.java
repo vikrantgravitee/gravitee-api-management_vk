@@ -17,8 +17,7 @@ package io.gravitee.apim.infra.adapter;
 
 import io.gravitee.apim.core.api_health.model.AverageHealthCheckResponseTime;
 import io.gravitee.apim.core.api_health.query_service.ApiHealthQueryService;
-import java.util.Map;
-import java.util.stream.Collectors;
+import io.gravitee.repository.healthcheck.v4.model.ApiFieldPeriod;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
@@ -29,9 +28,10 @@ public interface ApiHealthAdapter {
     Logger LOGGER = LoggerFactory.getLogger(ApiHealthAdapter.class);
     ApiHealthAdapter INSTANCE = Mappers.getMapper(ApiHealthAdapter.class);
 
-    io.gravitee.repository.healthcheck.v4.model.AverageHealthCheckResponseTimeQuery map(
-        ApiHealthQueryService.AverageHealthCheckResponseTimeQuery source
-    );
-
+    ApiFieldPeriod map(ApiHealthQueryService.ApiFieldPeriodQuery source);
     AverageHealthCheckResponseTime map(io.gravitee.repository.healthcheck.v4.model.AverageHealthCheckResponseTime source);
+
+    io.gravitee.repository.healthcheck.v4.model.AverageHealthCheckResponseTimeOvertimeQuery map(
+        ApiHealthQueryService.AverageHealthCheckResponseTimeOvertimeQuery source
+    );
 }

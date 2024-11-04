@@ -413,9 +413,9 @@ class ApiAnalyticsResourceTest extends ApiResourceTest {
                         softly
                             .assertThat(result.getTimeRange())
                             .extracting(
-                                ApiAnalyticsOverPeriodResponseTimeRange::getFrom,
-                                ApiAnalyticsOverPeriodResponseTimeRange::getTo,
-                                ApiAnalyticsOverPeriodResponseTimeRange::getInterval
+                                io.gravitee.rest.api.management.v2.rest.model.AnalyticTimeRange::getFrom,
+                                io.gravitee.rest.api.management.v2.rest.model.AnalyticTimeRange::getTo,
+                                io.gravitee.rest.api.management.v2.rest.model.AnalyticTimeRange::getInterval
                             )
                             .contains(
                                 expectedTimeRange.from().toEpochMilli(),

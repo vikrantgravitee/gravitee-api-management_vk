@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.repository.elasticsearch.v4.healthcheck.spring;
 
-import io.gravitee.repository.elasticsearch.configuration.RepositoryConfiguration;
-import io.gravitee.repository.elasticsearch.v4.healthcheck.HealthCheckElasticsearchRepository;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+package appender;
 
-@Configuration
-public class HealthCheckConfiguration {
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import java.util.Collections;
+import java.util.List;
 
-    @Bean
-    public HealthCheckElasticsearchRepository healthCheckElasticsearchRepository(RepositoryConfiguration configuration) {
-        return new HealthCheckElasticsearchRepository(configuration);
+public class MemoryAppender extends ListAppender<ILoggingEvent> {
+
+    public void reset() {
+        this.list.clear();
+    }
+
+    public List<ILoggingEvent> getLoggedEvents() {
+        return Collections.unmodifiableList(this.list);
     }
 }

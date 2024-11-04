@@ -15,12 +15,15 @@
  */
 package io.gravitee.apim.infra.query_service.api_health;
 
+import io.gravitee.apim.core.api_health.model.AvailabilityHealthCheck;
 import io.gravitee.apim.core.api_health.model.AverageHealthCheckResponseTime;
+import io.gravitee.apim.core.api_health.model.AverageHealthCheckResponseTimeOvertime;
 import io.gravitee.apim.core.api_health.query_service.ApiHealthQueryService;
 import io.gravitee.apim.infra.adapter.ApiHealthAdapter;
 import io.gravitee.repository.common.query.QueryContext;
 import io.gravitee.repository.healthcheck.v4.api.HealthCheckRepository;
-import java.util.Optional;
+import io.reactivex.rxjava3.core.Maybe;
+import java.util.ArrayList;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +37,31 @@ public class ApiHealthQueryServiceImpl implements ApiHealthQueryService {
     }
 
     @Override
-    public Optional<AverageHealthCheckResponseTime> averageResponseTime(AverageHealthCheckResponseTimeQuery query) {
+    public Maybe<AverageHealthCheckResponseTime> averageResponseTime(ApiFieldPeriodQuery query) {
         return healthCheckRepository
             .averageResponseTime(new QueryContext(query.organizationId(), query.environmentId()), ApiHealthAdapter.INSTANCE.map(query))
             .map(ApiHealthAdapter.INSTANCE::map);
+    }
+
+    @Override
+    public Maybe<AverageHealthCheckResponseTimeOvertime> averageResponseTimeOvertime(AverageHealthCheckResponseTimeOvertimeQuery query) {
+        return healthCheckRepository
+            .averageResponseTimeOvertime(
+                new QueryContext(query.organizationId(), query.environmentId()),
+                ApiHealthAdapter.INSTANCE.map(query)
+            )
+            .map(result ->
+                new AverageHealthCheckResponseTimeOvertime(
+                    new AverageHealthCheckResponseTimeOvertime.TimeRange(query.from(), query.to(), query.interval()),
+                    new ArrayList<>(result.buckets().values())
+                )
+            );
+    }
+
+    @Override
+    public Maybe<AvailabilityHealthCheck> availability(ApiFieldPeriodQuery query) {
+        return healthCheckRepository
+            .availability(new QueryContext(query.organizationId(), query.environmentId()), ApiHealthAdapter.INSTANCE.map(query))
+            .map(response -> new AvailabilityHealthCheck(response.global(), response.ratesByFields()));
     }
 }

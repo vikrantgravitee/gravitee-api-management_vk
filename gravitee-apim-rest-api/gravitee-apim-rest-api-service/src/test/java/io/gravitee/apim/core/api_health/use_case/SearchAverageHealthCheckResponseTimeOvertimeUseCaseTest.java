@@ -27,15 +27,15 @@ import fixtures.core.model.ApiFixtures;
 import inmemory.ApiCrudServiceInMemory;
 import io.gravitee.apim.core.api.exception.ApiNotFoundException;
 import io.gravitee.apim.core.api.exception.TcpProxyNotSupportedException;
-import io.gravitee.apim.core.api_health.model.AverageHealthCheckResponseTime;
+import io.gravitee.apim.core.api_health.model.AverageHealthCheckResponseTimeOvertime;
 import io.gravitee.apim.core.api_health.query_service.ApiHealthQueryService;
 import io.gravitee.common.utils.TimeProvider;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,20 +44,23 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-class SearchAverageHealthCheckResponseTimeUseCaseTest {
+class SearchAverageHealthCheckResponseTimeOvertimeUseCaseTest {
 
-    private static final Instant INSTANT_NOW = Instant.parse("2023-10-22T10:15:30Z");
     private static final String ORGANIZATION_ID = "organization-id";
     private static final String ENV_ID = "environment-id";
+    private static final Instant INSTANT_NOW = Instant.parse("2023-10-22T10:15:30Z");
+    private static final Instant TO = INSTANT_NOW;
+    private static final Instant FROM = TO.minus(1, ChronoUnit.DAYS);
+    private static final Duration INTERVAL = Duration.ofMinutes(10);
 
     private final FakeApiHealthQueryService apiHealthQueryService = Mockito.spy(new FakeApiHealthQueryService());
     private final ApiCrudServiceInMemory apiCrudService = new ApiCrudServiceInMemory();
 
-    private SearchAverageHealthCheckResponseTimeUseCase useCase;
+    private SearchAverageHealthCheckResponseTimeOvertimeUseCase useCase;
 
     @BeforeAll
     static void beforeAll() {
-        TimeProvider.overrideClock(Clock.fixed(INSTANT_NOW, ZoneId.systemDefault()));
+        TimeProvider.overrideClock(Clock.fixed(TO, ZoneId.systemDefault()));
     }
 
     @AfterAll
@@ -67,7 +70,7 @@ class SearchAverageHealthCheckResponseTimeUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new SearchAverageHealthCheckResponseTimeUseCase(apiHealthQueryService, apiCrudService);
+        useCase = new SearchAverageHealthCheckResponseTimeOvertimeUseCase(apiHealthQueryService, apiCrudService);
     }
 
     @AfterEach
@@ -80,37 +83,31 @@ class SearchAverageHealthCheckResponseTimeUseCaseTest {
     void should_return_average_response_time_for_the_given_period() {
         // Given
         apiCrudService.initWith(List.of(ApiFixtures.aProxyApiV4()));
-        var expectedData = new AverageHealthCheckResponseTime(3L, Map.of("default", 3L));
-        apiHealthQueryService.averageHealthCheckResponseTime = expectedData;
+        var expectedData = new AverageHealthCheckResponseTimeOvertime(
+            new AverageHealthCheckResponseTimeOvertime.TimeRange(FROM, TO, INTERVAL),
+            List.of(3L)
+        );
+        apiHealthQueryService.averageHealthCheckResponseTimeOvertime = expectedData;
 
         // When
         var output = useCase
-            .execute(
-                new SearchAverageHealthCheckResponseTimeUseCase.Input(
-                    ORGANIZATION_ID,
-                    ENV_ID,
-                    MY_API,
-                    "endpoint",
-                    INSTANT_NOW.minus(1, ChronoUnit.DAYS),
-                    INSTANT_NOW
-                )
-            )
+            .execute(new SearchAverageHealthCheckResponseTimeOvertimeUseCase.Input(ORGANIZATION_ID, ENV_ID, MY_API, FROM, TO, INTERVAL))
             .blockingGet();
 
         // Then
-        assertThat(requireNonNull(output).averageHealthCheckResponseTime()).isEqualTo(expectedData);
+        assertThat(requireNonNull(output).averageHealthCheckResponseTimeOvertime()).isEqualTo(expectedData);
 
-        var queryCaptor = ArgumentCaptor.forClass(ApiHealthQueryService.ApiFieldPeriodQuery.class);
-        verify(apiHealthQueryService).averageResponseTime(queryCaptor.capture());
+        var queryCaptor = ArgumentCaptor.forClass(ApiHealthQueryService.AverageHealthCheckResponseTimeOvertimeQuery.class);
+        verify(apiHealthQueryService).averageResponseTimeOvertime(queryCaptor.capture());
         assertThat(queryCaptor.getValue())
             .satisfies(query -> {
                 assertSoftly(softly -> {
                     softly.assertThat(query.organizationId()).isEqualTo(ORGANIZATION_ID);
                     softly.assertThat(query.environmentId()).isEqualTo(ENV_ID);
                     softly.assertThat(query.apiId()).isEqualTo(MY_API);
-                    softly.assertThat(query.field()).isEqualTo("endpoint");
-                    softly.assertThat(query.from()).isEqualTo(INSTANT_NOW.minus(1, ChronoUnit.DAYS));
-                    softly.assertThat(query.to()).isEqualTo(INSTANT_NOW);
+                    softly.assertThat(query.from()).isEqualTo(FROM);
+                    softly.assertThat(query.to()).isEqualTo(TO);
+                    softly.assertThat(query.interval()).isEqualTo(INTERVAL);
                 });
             });
     }
@@ -122,16 +119,7 @@ class SearchAverageHealthCheckResponseTimeUseCaseTest {
         // When
         var throwable = catchThrowable(() ->
             useCase
-                .execute(
-                    new SearchAverageHealthCheckResponseTimeUseCase.Input(
-                        ORGANIZATION_ID,
-                        ENV_ID,
-                        MY_API,
-                        "endpoint",
-                        INSTANT_NOW.minus(1, ChronoUnit.DAYS),
-                        INSTANT_NOW
-                    )
-                )
+                .execute(new SearchAverageHealthCheckResponseTimeOvertimeUseCase.Input(ORGANIZATION_ID, ENV_ID, MY_API, FROM, TO, INTERVAL))
                 .blockingGet()
         );
 
@@ -148,14 +136,7 @@ class SearchAverageHealthCheckResponseTimeUseCaseTest {
         var throwable = catchThrowable(() ->
             useCase
                 .execute(
-                    new SearchAverageHealthCheckResponseTimeUseCase.Input(
-                        ORGANIZATION_ID,
-                        "another",
-                        MY_API,
-                        "endpoint",
-                        INSTANT_NOW.minus(1, ChronoUnit.DAYS),
-                        INSTANT_NOW
-                    )
+                    new SearchAverageHealthCheckResponseTimeOvertimeUseCase.Input(ORGANIZATION_ID, "another", MY_API, FROM, TO, INTERVAL)
                 )
                 .blockingGet()
         );
@@ -172,16 +153,7 @@ class SearchAverageHealthCheckResponseTimeUseCaseTest {
         // When
         var throwable = catchThrowable(() ->
             useCase
-                .execute(
-                    new SearchAverageHealthCheckResponseTimeUseCase.Input(
-                        ORGANIZATION_ID,
-                        ENV_ID,
-                        MY_API,
-                        "endpoint",
-                        INSTANT_NOW.minus(1, ChronoUnit.DAYS),
-                        INSTANT_NOW
-                    )
-                )
+                .execute(new SearchAverageHealthCheckResponseTimeOvertimeUseCase.Input(ORGANIZATION_ID, ENV_ID, MY_API, FROM, TO, INTERVAL))
                 .blockingGet()
         );
 

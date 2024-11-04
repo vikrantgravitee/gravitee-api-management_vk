@@ -20,10 +20,11 @@ import io.gravitee.apim.core.api.crud_service.ApiCrudService;
 import io.gravitee.apim.core.api.exception.ApiNotFoundException;
 import io.gravitee.apim.core.api.exception.TcpProxyNotSupportedException;
 import io.gravitee.apim.core.api.model.Api;
-import io.gravitee.apim.core.api_health.model.AverageHealthCheckResponseTime;
+import io.gravitee.apim.core.api_health.model.AverageHealthCheckResponseTimeOvertime;
 import io.gravitee.apim.core.api_health.query_service.ApiHealthQueryService;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
+import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,22 +32,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @UseCase
-public class SearchAverageHealthCheckResponseTimeUseCase {
+public class SearchAverageHealthCheckResponseTimeOvertimeUseCase {
 
     private final ApiHealthQueryService apiHealthQueryService;
     private final ApiCrudService apiCrudService;
 
-    public Maybe<Output> execute(SearchAverageHealthCheckResponseTimeUseCase.Input input) {
+    public Maybe<Output> execute(SearchAverageHealthCheckResponseTimeOvertimeUseCase.Input input) {
         return validateApiRequirements(input)
             .flatMapMaybe(api ->
-                apiHealthQueryService.averageResponseTime(
-                    new ApiHealthQueryService.ApiFieldPeriodQuery(
+                apiHealthQueryService.averageResponseTimeOvertime(
+                    new ApiHealthQueryService.AverageHealthCheckResponseTimeOvertimeQuery(
                         input.organizationId,
                         input.environmentId,
                         input.apiId,
-                        input.group,
                         input.from,
-                        input.to
+                        input.to,
+                        input.interval
                     )
                 )
             )
@@ -68,7 +69,7 @@ public class SearchAverageHealthCheckResponseTimeUseCase {
         return !api.belongsToEnvironment(environmentId) ? Single.error(new ApiNotFoundException(api.getId())) : Single.just(api);
     }
 
-    public record Input(String organizationId, String environmentId, String apiId, String group, Instant from, Instant to) {}
+    public record Input(String organizationId, String environmentId, String apiId, Instant from, Instant to, Duration interval) {}
 
-    public record Output(AverageHealthCheckResponseTime averageHealthCheckResponseTime) {}
+    public record Output(AverageHealthCheckResponseTimeOvertime averageHealthCheckResponseTimeOvertime) {}
 }

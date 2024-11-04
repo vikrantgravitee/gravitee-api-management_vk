@@ -15,8 +15,12 @@
  */
 package io.gravitee.rest.api.management.v2.rest.resource.api.health;
 
+import io.gravitee.apim.core.api_health.use_case.AvailabilityUseCase;
+import io.gravitee.apim.core.api_health.use_case.SearchAverageHealthCheckResponseTimeOvertimeUseCase;
 import io.gravitee.apim.core.api_health.use_case.SearchAverageHealthCheckResponseTimeUseCase;
 import io.gravitee.rest.api.management.v2.rest.mapper.ApiHealthMapper;
+import io.gravitee.rest.api.management.v2.rest.model.ApiHealthAvailabilityResponse;
+import io.gravitee.rest.api.management.v2.rest.model.ApiHealthAverageResponseTimeOvertimeResponse;
 import io.gravitee.rest.api.management.v2.rest.model.ApiHealthAverageResponseTimeResponse;
 import io.gravitee.rest.api.management.v2.rest.resource.AbstractResource;
 import io.gravitee.rest.api.model.permissions.RolePermission;
@@ -31,8 +35,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
 
 public class ApiHealthResource extends AbstractResource {
 
@@ -41,6 +45,12 @@ public class ApiHealthResource extends AbstractResource {
 
     @Inject
     private SearchAverageHealthCheckResponseTimeUseCase searchAverageHealthCheckResponseTimeUseCase;
+
+    @Inject
+    private AvailabilityUseCase availabilityUseCase;
+
+    @Inject
+    private SearchAverageHealthCheckResponseTimeOvertimeUseCase searchAverageHealthCheckResponseTimeOvertimeUseCase;
 
     @Path("/average-response-time")
     @GET
@@ -63,8 +73,51 @@ public class ApiHealthResource extends AbstractResource {
                     Instant.ofEpochMilli(to)
                 )
             )
-            .averageHealthCheckResponseTime()
+            .map(SearchAverageHealthCheckResponseTimeUseCase.Output::averageHealthCheckResponseTime)
             .map(ApiHealthMapper.INSTANCE::map)
-            .orElse(null);
+            .blockingGet();
+    }
+
+    @Path("/average-response-time-overtime")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Permissions({ @Permission(value = RolePermission.API_HEALTH, acls = RolePermissionAction.READ) })
+    public ApiHealthAverageResponseTimeOvertimeResponse getAverageResponseTimeOvertime(
+        @QueryParam("from") Long from,
+        @QueryParam("to") Long to,
+        @QueryParam("interval") Long interval
+    ) {
+        var context = GraviteeContext.getExecutionContext();
+        return searchAverageHealthCheckResponseTimeOvertimeUseCase
+            .execute(
+                new SearchAverageHealthCheckResponseTimeOvertimeUseCase.Input(
+                    context.getOrganizationId(),
+                    context.getEnvironmentId(),
+                    apiId,
+                    Instant.ofEpochMilli(from),
+                    Instant.ofEpochMilli(to),
+                    Duration.ofMillis(interval)
+                )
+            )
+            .map(SearchAverageHealthCheckResponseTimeOvertimeUseCase.Output::averageHealthCheckResponseTimeOvertime)
+            .map(ApiHealthMapper.INSTANCE::map)
+            .blockingGet();
+    }
+
+    @Path("availability")
+    @GET
+    @Produces(io.gravitee.common.http.MediaType.APPLICATION_JSON)
+    @Permissions({ @Permission(value = RolePermission.API_HEALTH, acls = RolePermissionAction.READ) })
+    public ApiHealthAvailabilityResponse getApiById(
+        @QueryParam("from") long from,
+        @QueryParam("to") long to,
+        @QueryParam("field") String field
+    ) {
+        Instant since = Instant.ofEpochMilli(from);
+        Instant until = Instant.ofEpochMilli(to);
+        return availabilityUseCase
+            .execute(new AvailabilityUseCase.Input(GraviteeContext.getExecutionContext(), since, until, apiId, field))
+            .map(output -> new ApiHealthAvailabilityResponse().global(output.global()).group(output.byField()))
+            .blockingGet();
     }
 }
