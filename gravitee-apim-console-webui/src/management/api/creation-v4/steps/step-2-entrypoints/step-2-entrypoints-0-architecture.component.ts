@@ -22,8 +22,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { Step2Entrypoints1ListComponent } from './step-2-entrypoints-1-list.component';
 
 import { ApiCreationStepService } from '../../services/api-creation-step.service';
-import { ApiType } from '../../../../../entities/management-api-v2';
+import {ApiType, ListenerType, Qos} from '../../../../../entities/management-api-v2';
 import { UTMTags, ApimFeature } from '../../../../../shared/components/gio-license/gio-license-data';
+import {Step2Entrypoints2ConfigComponent} from "./step-2-entrypoints-2-config.component";
 
 @Component({
   selector: 'step-2-entrypoints-0-architecture',
@@ -91,14 +92,28 @@ export class Step2Entrypoints0ArchitectureComponent implements OnInit, OnDestroy
         .subscribe((confirmed) => {
           if (confirmed) {
             this.stepService.removeAllNextSteps();
-            this.form.value.type === 'PROXY' ? this.doSaveSync() : this.doSaveAsync();
+            this.saveByApiType();
           } else {
             this.form.setValue(this.initialValue);
           }
         });
       return;
     }
-    this.form.value.type === 'PROXY' ? this.doSaveSync() : this.doSaveAsync();
+    this.saveByApiType();
+  }
+
+  private saveByApiType(): void {
+    switch (this.form.value.type) {
+      case 'PROXY':
+        this.doSaveSync();
+        break;
+      case 'MESSAGE':
+        this.doSaveAsync();
+        break;
+      case 'KAFKA':
+        this.doSaveKafka();
+        break;
+    }
   }
 
   private doSaveSync() {
@@ -116,6 +131,24 @@ export class Step2Entrypoints0ArchitectureComponent implements OnInit, OnDestroy
     this.stepService.validStep((previousPayload) => ({
       ...previousPayload,
       type: 'MESSAGE',
+    }));
+    this.stepService.goToNextStep({
+      groupNumber: 2,
+      component: Step2Entrypoints1ListComponent,
+    });
+  }
+
+  private doSaveKafka() {
+    this.stepService.validStep((previousPayload) => ({
+      ...previousPayload,
+      selectedEntrypoints: [{
+        id: 'native-kafka',
+        name: 'Native Kafka',
+        icon: undefined,
+        supportedListenerType: 'KAFKA',
+        deployed: true,
+      }],
+      type: 'NATIVE',
     }));
     this.stepService.goToNextStep({
       groupNumber: 2,
