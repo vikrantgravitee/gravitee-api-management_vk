@@ -73,16 +73,24 @@ public class PlanApiTypeUpgrader implements Upgrader {
             )
             .collect(Collectors.toSet());
 
-        for (Api api : v4Apis) {
-            try {
-                Set<Plan> plans = planRepository.findByApi(api.getId());
-                for (Plan plan : plans) {
-                    populateApiType(plan, api.getType());
+        v4Apis
+            .stream()
+            .forEach(api -> {
+                try {
+                    planRepository
+                        .findByApi(api.getId())
+                        .stream()
+                        .forEach(plan -> {
+                            try {
+                                populateApiType(plan, api.getType());
+                            } catch (TechnicalException e) {
+                                log.error("Unable to update api_type for plan {}", plan.getId(), e);
+                            }
+                        });
+                } catch (Exception e) {
+                    log.error("Unable to migrate api_type for API {} and its plans", api.getId(), e);
                 }
-            } catch (Exception e) {
-                log.error("Unable to migrate api_type for API {} and its plans", api.getId(), e);
-            }
-        }
+            });
 
         log.info("Migration of plan api_type completed.");
     }

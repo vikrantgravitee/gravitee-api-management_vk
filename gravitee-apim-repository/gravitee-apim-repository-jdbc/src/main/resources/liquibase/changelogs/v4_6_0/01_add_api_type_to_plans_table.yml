@@ -8,4 +8,4 @@ databaseChangeLog:
             columns:
               - column:
                   name: api_type
-                  type: VARCHAR(255)
+                  type: VARCHAR(64)
