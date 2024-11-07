@@ -25,10 +25,7 @@ import io.gravitee.repository.management.api.search.ApiCriteria;
 import io.gravitee.repository.management.api.search.ApiFieldFilter;
 import io.gravitee.repository.management.model.Api;
 import io.gravitee.repository.management.model.Plan;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -65,34 +62,32 @@ public class PlanApiTypeUpgrader implements Upgrader {
     private void updatePlanApiType() throws TechnicalException {
         log.info("Starting migration of plan api_type...");
 
-        Collection<Api> v4Apis = apiRepository
+        apiRepository
             .search(
                 new ApiCriteria.Builder().definitionVersion(List.of(DefinitionVersion.V4)).build(),
                 null,
                 ApiFieldFilter.defaultFields()
             )
-            .collect(Collectors.toSet());
-
-        v4Apis
-            .stream()
-            .forEach(api -> {
-                try {
-                    planRepository
-                        .findByApi(api.getId())
-                        .stream()
-                        .forEach(plan -> {
-                            try {
-                                populateApiType(plan, api.getType());
-                            } catch (TechnicalException e) {
-                                log.error("Unable to update api_type for plan {}", plan.getId(), e);
-                            }
-                        });
-                } catch (Exception e) {
-                    log.error("Unable to migrate api_type for API {} and its plans", api.getId(), e);
-                }
-            });
+            .forEach(this::populatePlansWithApiTypeForApi);
 
         log.info("Migration of plan api_type completed.");
+    }
+
+    private void populatePlansWithApiTypeForApi(Api api) {
+        try {
+            planRepository
+                .findByApi(api.getId())
+                .stream()
+                .forEach(plan -> {
+                    try {
+                        populateApiType(plan, api.getType());
+                    } catch (TechnicalException e) {
+                        log.error("Unable to update api_type for plan {}", plan.getId(), e);
+                    }
+                });
+        } catch (Exception e) {
+            log.error("Unable to migrate api_type for API {} and its plans", api.getId(), e);
+        }
     }
 
     private void populateApiType(Plan plan, ApiType apiType) throws TechnicalException {
