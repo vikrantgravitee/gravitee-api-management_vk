@@ -38,6 +38,19 @@ public class SubscriptionCrudServiceImpl implements SubscriptionCrudService {
     }
 
     @Override
+    public SubscriptionEntity create(SubscriptionEntity subscriptionEntity) {
+        try {
+            var result = subscriptionRepository.create(subscriptionAdapter.fromEntity(subscriptionEntity));
+            return subscriptionAdapter.toEntity(result);
+        } catch (TechnicalException e) {
+            throw new TechnicalManagementException(
+                "An error occurs while trying to create the subscription: " + subscriptionEntity.getId(),
+                e
+            );
+        }
+    }
+
+    @Override
     public SubscriptionEntity get(String subscriptionId) {
         try {
             return subscriptionRepository

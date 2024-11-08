@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gravitee.apim.core.subscription.crud_service;
+package io.gravitee.apim.core.subscription.domain_service;
 
+import io.gravitee.apim.core.audit.model.AuditInfo;
 import io.gravitee.apim.core.subscription.model.SubscriptionEntity;
+import io.gravitee.apim.core.subscription.model.crd.SubscriptionSpec;
 
-public interface SubscriptionCrudService {
-    SubscriptionEntity create(SubscriptionEntity subscriptionEntity);
-
-    SubscriptionEntity get(String subscriptionId);
-
-    SubscriptionEntity update(SubscriptionEntity subscriptionEntity);
-
-    void delete(String subscriptionId);
+/**
+ * @author Antoine CORDIER (antoine.cordier at graviteesource.com)
+ * @author GraviteeSource Team
+ */
+public interface SubscriptionSpecDomainService {
+    SubscriptionEntity createOrUpdate(AuditInfo auditInfo, SubscriptionSpec spec);
 }
