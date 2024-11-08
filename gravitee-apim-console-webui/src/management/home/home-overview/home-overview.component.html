@@ -21,8 +21,8 @@
   </div>
   <div class="home-overview__row-cards">
     <mat-card class="home-overview__card flex">
-      <mat-card-content>
-        <div class="mat-body-1">Summary</div>
+      <div class="home-overview__card__header">Summary</div>
+      <mat-card-content class="home-overview__card__content">
         <div *ngIf="apiNb !== undefined && applicationNb !== undefined; else loader" class="home-overview__card__list">
           <div class="home-overview__card__list__row">
             <span class="home-overview__card__list__row__value">{{ apiNb }}</span>
@@ -36,16 +36,16 @@
       </mat-card-content>
     </mat-card>
     <mat-card class="home-overview__card">
-      <mat-card-content>
-        <div class="mat-body-1">API Lifecycle State</div>
+      <div class="home-overview__card__header">API Lifecycle State</div>
+      <mat-card-content class="home-overview__card__content">
         <ng-container *ngIf="apiLifecycleState; else loader">
           <gio-api-lifecycle-state [data]="apiLifecycleState"></gio-api-lifecycle-state>
         </ng-container>
       </mat-card-content>
     </mat-card>
     <mat-card class="home-overview__card">
-      <mat-card-content>
-        <div class="mat-body-1">API State</div>
+      <div class="home-overview__card__header">API State</div>
+      <mat-card-content class="home-overview__card__content">
         <ng-container *ngIf="apiState; else loader">
           <gio-api-state [data]="apiState"></gio-api-state>
         </ng-container>
@@ -56,27 +56,25 @@
   <h2 class="home-overview__row-title">V2 APIs</h2>
   <div class="home-overview__row-cards">
     <mat-card class="home-overview__card">
-      <mat-card-content>
-        <div class="mat-body-1">API Response Status</div>
-
+      <div class="home-overview__card__header">API Response Status</div>
+      <mat-card-content class="home-overview__card__content">
         <ng-container *ngIf="apiResponseStatus; else loader">
           <gio-api-response-status [data]="apiResponseStatus"></gio-api-response-status>
         </ng-container>
       </mat-card-content>
     </mat-card>
     <mat-card class="home-overview__card">
-      <mat-card-content>
-        <div class="mat-body-1">
-          Top APIs
-          <span class="mat-caption">(Ordered by API calls)</span>
-        </div>
-      </mat-card-content>
+      <div class="home-overview__card__header">
+        Top APIs
+        <mat-icon class="home-overview__card__header__tooltip" svgIcon="gio:info" matTooltip="Ordered by API calls"></mat-icon>
+      </div>
       <ng-container *ngIf="topApis; else loader">
         <gio-top-apis-table [data]="topApis"></gio-top-apis-table>
       </ng-container>
     </mat-card>
-    <mat-card class="home-overview__card flex">
-      <mat-card-content>
+    <mat-card class="home-overview__card">
+      <div class="home-overview__card__header">API Request Stats</div>
+      <mat-card-content class="home-overview__card__content">
         <ng-container *ngIf="requestStats; else loader">
           <gio-request-stats [data]="requestStats"></gio-request-stats>
         </ng-container>
